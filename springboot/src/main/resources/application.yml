@@ -1,7 +1,7 @@
 # 服务器配置
 server:
   port: 9090
-  
+
   servlet:
     multipart:
       max-file-size: 100MB
@@ -12,10 +12,10 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: 123456
-    url: jdbc:mysql://localhost:3306/code2026?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
-  
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/code2026?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true}
+
   # 定时任务配置
   task:
     scheduling:
@@ -23,7 +23,7 @@ spring:
       pool:
         size: 5
       thread-name-prefix: risk-scheduler-
-  
+
   # JPA/Hibernate配置（如果有）
   jpa:
     hibernate:
@@ -93,19 +93,19 @@ app:
     feature-calc-cron: "0 0 2 * * ?"      # 每天凌晨2点
     cleanup-cron: "0 0 3 ? * SUN"         # 每周日凌晨3点
     metrics-retention-days: 30
-  
+
   # 健康检查配置
   health-check:
     enabled: true
     database-timeout-ms: 5000
     max-response-time-ms: 3000
-  
+
   # 系统监控
   monitoring:
     enable-metrics: true
     enable-tracing: false
     slow-query-threshold-ms: 1000
-  
+
   # 风险预警阈值
   risk:
     high-threshold: 90
