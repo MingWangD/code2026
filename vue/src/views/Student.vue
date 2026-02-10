@@ -17,6 +17,19 @@
 
     <!-- 右侧内容 -->
     <main class="content">
+      <section class="card course-card">
+        <h3>当前课程</h3>
+        <div class="course-row">
+          <select v-model.number="courseId" class="course-select">
+            <option v-for="c in courses" :key="c.id" :value="c.id">
+              {{ c.courseName || c.course_name || c.name || (`课程#${c.id}`) }}
+            </option>
+          </select>
+          <span class="meta" v-if="courseLoading">课程加载中...</span>
+          <span class="meta" v-else-if="courses.length===0">暂无课程数据，使用默认课程ID: {{ courseId }}</span>
+        </div>
+      </section>
+
       <!-- 个人信息 -->
       <section v-if="tab==='profile'" class="card">
         <h3>个人信息</h3>
@@ -57,33 +70,34 @@
         </div>
       </section>
 
-      <!-- 提交作业（你后续把原作业页内容搬进来） -->
-      <section v-if="tab==='homework'" class="card">
-        <h3>提交作业</h3>
-        <div class="tip">这里放你的作业列表与提交逻辑（下一步我帮你合并）。</div>
+      <section v-if="tab==='homework'">
+        <StudentHomework :course-id="courseId" :student-id="studentId" :student-name="studentName" :api-base="API_BASE" />
       </section>
 
-      <!-- 考试（你后续把原考试页内容搬进来） -->
-      <section v-if="tab==='exam'" class="card">
-        <h3>考试</h3>
-        <div class="tip">这里放你的考试列表与答题提交逻辑（下一步我帮你合并）。</div>
+      <section v-if="tab==='exam'">
+        <StudentExam :course-id="courseId" :student-id="studentId" :api-base="API_BASE" />
       </section>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import StudentHomework from "./student/StudentHomework.vue";
+import StudentExam from "./student/StudentExam.vue";
 
-const BASE_URL = "http://localhost:9090";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 const USER_KEY = "system-user";
 
 // 默认打开视频页
 const tab = ref("video");
 
-// 课程与视频（演示值；后续可从 course.video_url 动态赋值）
 const courseId = ref(1);
-const videoUrl = ref("http://localhost:9090/videos/demo.mp4");
+const courses = ref([]);
+const courseLoading = ref(false);
+
+// 课程与视频（演示值；后续可从 course.video_url 动态赋值）
+const videoUrl = ref(`${API_BASE}/videos/demo.mp4`);
 
 // 登录学生信息
 let studentId = null;
@@ -94,6 +108,23 @@ try {
   studentName = u?.name ?? "";
 } catch {
   studentId = null;
+}
+
+async function loadCourses() {
+  courseLoading.value = true;
+  try {
+    const res = await fetch(`${API_BASE}/course/selectAll`);
+    const json = await res.json();
+    const list = json?.data || [];
+    courses.value = list;
+    if (list.length > 0 && !list.find(c => Number(c.id) === Number(courseId.value))) {
+      courseId.value = Number(list[0].id);
+    }
+  } catch (e) {
+    console.error("课程加载失败", e);
+  } finally {
+    courseLoading.value = false;
+  }
 }
 
 // ============ B 方案：timeupdate 按 10 秒桶上报 ============
@@ -124,7 +155,7 @@ async function sendProgress(deltaSeconds) {
 
   try {
     console.log("[Student] POST /behavior/event/videoProgress", payload);
-    await fetch(`${BASE_URL}/behavior/event/videoProgress`, {
+    await fetch(`${API_BASE}/behavior/event/videoProgress`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -132,13 +163,10 @@ async function sendProgress(deltaSeconds) {
   } catch (e) {
     console.error("[Student] 上报失败", e);
   }
-  //console.log("[CHECK] studentId=", studentId, "studentName=", studentName, "localStorage=", localStorage.getItem(USER_KEY));
-
 }
 
 function onTimeUpdate() {
   const v = videoRef.value;
-  //console.log("[CHECK] timeupdate fired", v?.currentTime, "studentId=", studentId); // ✅加这一行
   if (!v) return;
   if (v.paused || v.ended) return;
 
@@ -147,15 +175,17 @@ function onTimeUpdate() {
 
   if (bucket > lastBucket) {
     lastBucket = bucket;
-    //console.log("[CHECK] bucket hit -> sendProgress", bucket); // ✅再加这一行
     sendProgress(10);
   }
 }
 
-
 function onEnded() {
-  //console.log("[Student] ended");
+  // no-op
 }
+
+onMounted(() => {
+  loadCourses();
+});
 </script>
 
 <style scoped>
@@ -173,12 +203,19 @@ function onEnded() {
 }
 .item.active { background: rgba(59,130,246,0.55); }
 
-.content { flex: 1; padding: 18px; }
+.content { flex: 1; padding: 18px; display: grid; gap: 14px; }
 .card {
   background: #fff;
   border-radius: 14px;
   padding: 18px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+.course-row { display: flex; align-items: center; gap: 10px; }
+.course-select {
+  min-width: 280px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
 }
 .warn { color: #c00; font-weight: 700; }
 .bar { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 12px; }

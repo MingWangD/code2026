@@ -1,4 +1,4 @@
-import { request } from './health';
+import request from '../utils/request';
 
 const API_BASE = '/api/dashboard';
 
@@ -8,7 +8,7 @@ export const getWarningTrend = async (days: number = 30) => {
         const response = await request.get(`${API_BASE}/warning-trend`, {
             params: { days }
         });
-        return response.data;
+        return response;
     } catch (error) {
         console.error('获取趋势数据失败:', error);
         // 返回模拟数据作为后备
@@ -74,7 +74,7 @@ const generateMockTrendData = (days: number) => {
 export const getDashboardOverview = async () => {
     try {
         const response = await request.get(`${API_BASE}/overview`);
-        return response.data;
+        return response;
     } catch (error) {
         console.error('获取总览数据失败:', error);
         // 返回模拟总览数据
