@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.mapper.StudentBehaviorMapper">
+
+    <resultMap id="StudentBehaviorResultMap" type="com.example.entity.StudentBehavior">
+        <id property="id" column="id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="behaviorType" column="behavior_type"/>
+        <result property="relatedId" column="related_id"/>
+        <result property="score" column="score"/>
+        <result property="isLate" column="is_late"/>
+        <result property="attemptNo" column="attempt_no"/>
+        <result property="behaviorTime" column="behavior_time"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 新增事件 -->
+    <insert id="insert" parameterType="com.example.entity.StudentBehavior"
+            useGeneratedKeys="true" keyProperty="id">
+        insert into student_behavior_event (
+            student_id, course_id,
+            behavior_type, related_id,
+            score, is_late, attempt_no,
+            behavior_time, create_time
+        ) values (
+                     #{studentId}, #{courseId},
+                     #{behaviorType}, #{relatedId},
+                     #{score}, #{isLate}, #{attemptNo},
+                     #{behaviorTime}, #{createTime}
+                 )
+    </insert>
+
+    <!-- 根据 ID -->
+    <select id="selectById" resultMap="StudentBehaviorResultMap">
+        select * from student_behavior_event where id = #{id}
+    </select>
+
+    <!-- 学生 + 课程 + 日期（按当天） -->
+    <select id="selectByStudentAndCourseAndDate" resultMap="StudentBehaviorResultMap">
+        select *
+        from student_behavior_event
+        where student_id = #{studentId}
+          and course_id = #{courseId}
+          and date(behavior_time) = #{date}
+        order by behavior_time desc
+    </select>
+
+
+    <!-- 查询全部 -->
+    <select id="selectAll" resultMap="StudentBehaviorResultMap">
+        select * from student_behavior_event
+        <where>
+            <if test="studentId != null">
+                and student_id = #{studentId}
+            </if>
+            <if test="courseId != null">
+                and course_id = #{courseId}
+            </if>
+            <if test="behaviorType != null and behaviorType != ''">
+                and behavior_type = #{behaviorType}
+            </if>
+        </where>
+        order by behavior_time desc
+    </select>
+
+    <!-- 学生 -->
+    <select id="selectByStudentId" resultMap="StudentBehaviorResultMap">
+        select * from student_behavior_event
+        where student_id = #{studentId}
+        order by behavior_time desc
+    </select>
+
+    <!-- 课程 -->
+    <select id="selectByCourseId" resultMap="StudentBehaviorResultMap">
+        select * from student_behavior_event
+        where course_id = #{courseId}
+        order by behavior_time desc
+    </select>
+
+    <!-- 学生 + 课程 -->
+    <select id="selectByStudentAndCourse" resultMap="StudentBehaviorResultMap">
+        select * from student_behavior_event
+        where student_id = #{studentId}
+          and course_id = #{courseId}
+        order by behavior_time desc
+    </select>
+
+    <!-- 删除 -->
+    <delete id="deleteById">
+        delete from student_behavior_event where id = #{id}
+    </delete>
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        insert into student_behavior_event (
+        student_id, course_id,
+        behavior_type, related_id,
+        score, is_late, attempt_no,
+        behavior_time, create_time
+        ) values
+        <foreach collection="list" item="b" separator=",">
+            (
+            #{b.studentId}, #{b.courseId},
+            #{b.behaviorType}, #{b.relatedId},
+            #{b.score}, #{b.isLate}, #{b.attemptNo},
+            #{b.behaviorTime}, #{b.createTime}
+            )
+        </foreach>
+    </insert>
+
+    <!-- ✅ 某天全部事件（按 behavior_time 所属日期过滤） -->
+    <select id="selectEventsByStudentCourseAndDate" resultMap="StudentBehaviorResultMap">
+        select *
+        from student_behavior_event
+        where student_id = #{studentId}
+          and course_id = #{courseId}
+          and date(behavior_time) = #{date}
+        order by behavior_time desc
+    </select>
+
+    <!-- ✅ 某天作业提交事件（HOMEWORK_SUBMIT） -->
+    <select id="selectHomeworkSubmitEventsByStudentCourseAndDate" resultMap="StudentBehaviorResultMap">
+        select *
+        from student_behavior_event
+        where student_id = #{studentId}
+          and course_id = #{courseId}
+          and behavior_type = 'HOMEWORK_SUBMIT'
+          and date(behavior_time) = #{date}
+        order by behavior_time desc
+    </select>
+
+
+</mapper>

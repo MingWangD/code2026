@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.CourseMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="CourseResultMap" type="com.example.entity.Course">
+        <id property="id" column="id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="courseNo" column="course_no"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="description" column="description"/>
+        <result property="credit" column="credit"/>
+        <result property="totalHours" column="total_hours"/>
+        <result property="semester" column="semester"/>
+        <result property="year" column="year"/>
+        <result property="coverImage" column="cover_image"/>
+        <result property="videoUrl" column="video_url"/>
+        <result property="materialUrl" column="material_url"/>
+        <result property="status" column="status"/>
+        <result property="studentCount" column="student_count"/>
+        <result property="homeworkCount" column="homework_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 查询所有课程 -->
+    <select id="selectAll" resultMap="CourseResultMap">
+        select * from `course`
+        <where>
+            <if test="courseName != null and courseName != ''">
+                and course_name like concat('%', #{courseName}, '%')
+            </if>
+            <if test="courseNo != null and courseNo != ''">
+                and course_no like concat('%', #{courseNo}, '%')
+            </if>
+            <if test="teacherId != null">
+                and teacher_id = #{teacherId}
+            </if>
+            <if test="teacherName != null and teacherName != ''">
+                and teacher_name like concat('%', #{teacherName}, '%')
+            </if>
+            <if test="semester != null and semester != ''">
+                and semester = #{semester}
+            </if>
+            <if test="year != null">
+                and year = #{year}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 根据ID查询课程 -->
+    <select id="selectById" resultMap="CourseResultMap">
+        select * from `course` where id = #{id}
+    </select>
+
+    <!-- 根据课程编号查询课程 -->
+    <select id="selectByCourseNo" resultMap="CourseResultMap">
+        select * from `course` where course_no = #{courseNo}
+    </select>
+
+    <!-- 根据教师ID查询课程 -->
+    <select id="selectByTeacherId" resultMap="CourseResultMap">
+        select * from `course` where teacher_id = #{teacherId}
+        order by create_time desc
+    </select>
+
+    <!-- 根据学期查询课程 -->
+    <select id="selectBySemester" resultMap="CourseResultMap">
+        select * from `course`
+        where semester = #{semester}
+        <if test="year != null">
+            and year = #{year}
+        </if>
+        order by course_no asc
+    </select>
+
+    <!-- 根据状态查询课程 -->
+    <select id="selectByStatus" resultMap="CourseResultMap">
+        select * from `course` where status = #{status}
+        order by create_time desc
+    </select>
+
+    <!-- 删除课程 -->
+    <delete id="deleteById">
+        delete from `course` where id = #{id}
+    </delete>
+
+    <!-- 新增课程 -->
+    <insert id="insert" parameterType="com.example.entity.Course" useGeneratedKeys="true" keyProperty="id">
+        insert into `course` (
+            course_name, course_no, teacher_id, teacher_name,
+            description, credit, total_hours, semester, year,
+            cover_image, video_url, material_url, status,
+            student_count, homework_count, create_time, update_time
+        ) values (
+                     #{courseName}, #{courseNo}, #{teacherId}, #{teacherName},
+                     #{description}, #{credit}, #{totalHours}, #{semester}, #{year},
+                     #{coverImage}, #{videoUrl}, #{materialUrl}, #{status},
+                     #{studentCount}, #{homeworkCount}, #{createTime}, #{updateTime}
+                 )
+    </insert>
+
+    <!-- 修改课程 -->
+    <update id="updateById" parameterType="com.example.entity.Course">
+        update `course`
+        <set>
+            <if test="courseName != null">course_name = #{courseName},</if>
+            <if test="courseNo != null">course_no = #{courseNo},</if>
+            <if test="teacherId != null">teacher_id = #{teacherId},</if>
+            <if test="teacherName != null">teacher_name = #{teacherName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="credit != null">credit = #{credit},</if>
+            <if test="totalHours != null">total_hours = #{totalHours},</if>
+            <if test="semester != null">semester = #{semester},</if>
+            <if test="year != null">year = #{year},</if>
+            <if test="coverImage != null">cover_image = #{coverImage},</if>
+            <if test="videoUrl != null">video_url = #{videoUrl},</if>
+            <if test="materialUrl != null">material_url = #{materialUrl},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="studentCount != null">student_count = #{studentCount},</if>
+            <if test="homeworkCount != null">homework_count = #{homeworkCount},</if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 统计课程数量 -->
+    <select id="count" resultType="java.lang.Integer">
+        select count(*) from `course`
+        <where>
+            <if test="teacherId != null">
+                and teacher_id = #{teacherId}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="semester != null and semester != ''">
+                and semester = #{semester}
+            </if>
+        </where>
+    </select>
+
+    <!-- 更新课程学生人数 -->
+    <update id="updateStudentCount">
+        update `course`
+        set student_count = #{studentCount},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 更新课程作业数量 -->
+    <update id="updateHomeworkCount">
+        update `course`
+        set homework_count = #{homeworkCount},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 分页查询课程 -->
+    <select id="selectByPage" resultMap="CourseResultMap">
+        select * from `course`
+        <where>
+            <if test="course.courseName != null and course.courseName != ''">
+                and course_name like concat('%', #{course.courseName}, '%')
+            </if>
+            <if test="course.courseNo != null and course.courseNo != ''">
+                and course_no like concat('%', #{course.courseNo}, '%')
+            </if>
+            <if test="course.teacherId != null">
+                and teacher_id = #{course.teacherId}
+            </if>
+            <if test="course.status != null and course.status != ''">
+                and status = #{course.status}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{offset}, #{pageSize}
+    </select>
+
+</mapper>

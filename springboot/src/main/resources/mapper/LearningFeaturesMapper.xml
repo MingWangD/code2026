@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.LearningFeaturesMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.entity.LearningFeatures">
+        <id column="id" property="id" />
+        <result column="student_id" property="studentId" />
+        <result column="student_name" property="studentName" />
+        <result column="student_no" property="studentNo" />
+        <result column="course_id" property="courseId" />
+        <result column="course_name" property="courseName" />
+        <result column="feature_date" property="featureDate" />
+        <result column="week_of_semester" property="weekOfSemester" />
+
+        <result column="video_watch_time" property="videoWatchTime" />
+        <result column="video_completion_rate" property="videoCompletionRate" />
+        <result column="video_engagement" property="videoEngagement" />
+
+        <result column="homework_submit_rate" property="homeworkSubmitRate" />
+        <result column="homework_avg_score" property="homeworkAvgScore" />
+        <result column="homework_delay_count" property="homeworkDelayCount" />
+        <result column="homework_quality_score" property="homeworkQualityScore" />
+
+        <result column="login_frequency" property="loginFrequency" />
+        <result column="login_regularity" property="loginRegularity" />
+        <result column="last_login_days" property="lastLoginDays" />
+
+        <result column="study_consistency" property="studyConsistency" />
+        <result column="study_intensity" property="studyIntensity" />
+        <result column="interaction_level" property="interactionLevel" />
+        <result column="focus_score" property="focusScore" />
+
+        <result column="risk_score" property="riskScore" />
+        <result column="risk_level" property="riskLevel" />
+        <result column="risk_probability" property="riskProbability" />
+
+        <result column="feature_vector" property="featureVector" />
+        <result column="created_time" property="createdTime" />
+        <result column="updated_time" property="updatedTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, student_id, student_name, student_no, course_id, course_name, feature_date,
+        week_of_semester, video_watch_time, video_completion_rate, video_engagement,
+        homework_submit_rate, homework_avg_score, homework_delay_count, homework_quality_score,
+        login_frequency, login_regularity, last_login_days, study_consistency, study_intensity,
+        interaction_level, focus_score, risk_score, risk_level, risk_probability,
+        feature_vector, created_time, updated_time
+    </sql>
+
+    <insert id="insert" parameterType="com.example.entity.LearningFeatures" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO learning_features (
+            student_id, student_name, student_no, course_id, course_name, feature_date,
+            week_of_semester, video_watch_time, video_completion_rate, video_engagement,
+            homework_submit_rate, homework_avg_score, homework_delay_count, homework_quality_score,
+            login_frequency, login_regularity, last_login_days, study_consistency, study_intensity,
+            interaction_level, focus_score, risk_score, risk_level, risk_probability,
+            feature_vector, created_time, updated_time
+        ) VALUES (
+                     #{studentId}, #{studentName}, #{studentNo}, #{courseId}, #{courseName}, #{featureDate},
+                     #{weekOfSemester}, #{videoWatchTime}, #{videoCompletionRate}, #{videoEngagement},
+                     #{homeworkSubmitRate}, #{homeworkAvgScore}, #{homeworkDelayCount}, #{homeworkQualityScore},
+                     #{loginFrequency}, #{loginRegularity}, #{lastLoginDays}, #{studyConsistency}, #{studyIntensity},
+                     #{interactionLevel}, #{focusScore}, #{riskScore}, #{riskLevel}, #{riskProbability},
+                     #{featureVector}, #{createdTime}, #{updatedTime}
+                 )
+    </insert>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM learning_features WHERE id = #{id}
+    </delete>
+
+    <update id="updateById" parameterType="com.example.entity.LearningFeatures">
+        UPDATE learning_features
+        <set>
+            <if test="studentId != null">student_id = #{studentId},</if>
+            <if test="studentName != null">student_name = #{studentName},</if>
+            <if test="studentNo != null">student_no = #{studentNo},</if>
+            <if test="courseId != null">course_id = #{courseId},</if>
+            <if test="courseName != null">course_name = #{courseName},</if>
+            <if test="featureDate != null">feature_date = #{featureDate},</if>
+            <if test="weekOfSemester != null">week_of_semester = #{weekOfSemester},</if>
+
+            <if test="videoWatchTime != null">video_watch_time = #{videoWatchTime},</if>
+            <if test="videoCompletionRate != null">video_completion_rate = #{videoCompletionRate},</if>
+            <if test="videoEngagement != null">video_engagement = #{videoEngagement},</if>
+
+            <if test="homeworkSubmitRate != null">homework_submit_rate = #{homeworkSubmitRate},</if>
+            <if test="homeworkAvgScore != null">homework_avg_score = #{homeworkAvgScore},</if>
+            <if test="homeworkDelayCount != null">homework_delay_count = #{homeworkDelayCount},</if>
+            <if test="homeworkQualityScore != null">homework_quality_score = #{homeworkQualityScore},</if>
+
+            <if test="loginFrequency != null">login_frequency = #{loginFrequency},</if>
+            <if test="loginRegularity != null">login_regularity = #{loginRegularity},</if>
+            <if test="lastLoginDays != null">last_login_days = #{lastLoginDays},</if>
+
+            <if test="studyConsistency != null">study_consistency = #{studyConsistency},</if>
+            <if test="studyIntensity != null">study_intensity = #{studyIntensity},</if>
+            <if test="interactionLevel != null">interaction_level = #{interactionLevel},</if>
+            <if test="focusScore != null">focus_score = #{focusScore},</if>
+
+            <if test="riskScore != null">risk_score = #{riskScore},</if>
+            <if test="riskLevel != null">risk_level = #{riskLevel},</if>
+            <if test="riskProbability != null">risk_probability = #{riskProbability},</if>
+
+            <if test="featureVector != null">feature_vector = #{featureVector},</if>
+            <if test="updatedTime != null">updated_time = #{updatedTime}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" parameterType="com.example.entity.LearningFeatures" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        <where>
+            <if test="studentId != null">AND student_id = #{studentId}</if>
+            <if test="studentName != null and studentName != ''">AND student_name LIKE CONCAT('%', #{studentName}, '%')</if>
+            <if test="studentNo != null and studentNo != ''">AND student_no LIKE CONCAT('%', #{studentNo}, '%')</if>
+            <if test="courseId != null">AND course_id = #{courseId}</if>
+            <if test="courseName != null and courseName != ''">AND course_name LIKE CONCAT('%', #{courseName}, '%')</if>
+            <if test="featureDate != null and featureDate != ''">AND feature_date = #{featureDate}</if>
+            <if test="riskLevel != null and riskLevel != ''">AND risk_level = #{riskLevel}</if>
+            <if test="riskScore != null">AND risk_score >= #{riskScore}</if>
+        </where>
+        ORDER BY feature_date DESC, risk_score DESC
+    </select>
+
+    <select id="selectByStudentId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE student_id = #{studentId}
+        ORDER BY feature_date DESC
+    </select>
+
+    <select id="selectByCourseId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE course_id = #{courseId}
+        ORDER BY risk_score DESC, feature_date DESC
+    </select>
+
+    <select id="selectByStudentAndCourse" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE student_id = #{studentId} AND course_id = #{courseId}
+        ORDER BY feature_date DESC
+    </select>
+
+    <select id="selectByDateRange" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE student_id = #{studentId}
+        AND feature_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY feature_date
+    </select>
+
+    <select id="selectByStudentCourseDate" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE student_id = #{studentId}
+        AND course_id = #{courseId}
+        AND feature_date = #{featureDate}
+        LIMIT 1
+    </select>
+
+    <select id="selectSummaryByStudent" resultMap="BaseResultMap">
+        SELECT
+        student_id, student_name, student_no, course_id, course_name,
+        COUNT(*) as feature_count,
+        AVG(video_watch_time) as video_watch_time,
+        AVG(video_completion_rate) as video_completion_rate,
+        AVG(homework_submit_rate) as homework_submit_rate,
+        AVG(homework_avg_score) as homework_avg_score,
+        SUM(homework_delay_count) as homework_delay_count,
+        AVG(login_frequency) as login_frequency,
+        AVG(focus_score) as focus_score,
+        AVG(risk_score) as risk_score,
+        MAX(risk_score) as max_risk_score
+        FROM learning_features
+        WHERE student_id = #{studentId}
+        <if test="courseId != null">AND course_id = #{courseId}</if>
+        <if test="startDate != null and startDate != ''">AND feature_date >= #{startDate}</if>
+        <if test="endDate != null and endDate != ''">AND feature_date &lt;= #{endDate}</if>
+        GROUP BY student_id, course_id
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM learning_features
+        <where>
+            <if test="studentId != null">AND student_id = #{studentId}</if>
+            <if test="courseId != null">AND course_id = #{courseId}</if>
+            <if test="riskLevel != null and riskLevel != ''">AND risk_level = #{riskLevel}</if>
+        </where>
+    </select>
+
+    <select id="selectHighRiskFeatures" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE risk_probability >= #{threshold}
+        ORDER BY risk_probability DESC
+        <if test="limit != null">LIMIT #{limit}</if>
+    </select>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO learning_features (
+        student_id, student_name, student_no, course_id, course_name, feature_date,
+        week_of_semester, video_watch_time, video_completion_rate, video_engagement,
+        homework_submit_rate, homework_avg_score, homework_delay_count, homework_quality_score,
+        login_frequency, login_regularity, last_login_days, study_consistency, study_intensity,
+        interaction_level, focus_score, risk_score, risk_level, risk_probability,
+        feature_vector, created_time, updated_time
+        ) VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (
+            #{item.studentId}, #{item.studentName}, #{item.studentNo}, #{item.courseId}, #{item.courseName}, #{item.featureDate},
+            #{item.weekOfSemester}, #{item.videoWatchTime}, #{item.videoCompletionRate}, #{item.videoEngagement},
+            #{item.homeworkSubmitRate}, #{item.homeworkAvgScore}, #{item.homeworkDelayCount}, #{item.homeworkQualityScore},
+            #{item.loginFrequency}, #{item.loginRegularity}, #{item.lastLoginDays}, #{item.studyConsistency}, #{item.studyIntensity},
+            #{item.interactionLevel}, #{item.focusScore}, #{item.riskScore}, #{item.riskLevel}, #{item.riskProbability},
+            #{item.featureVector}, #{item.createdTime}, #{item.updatedTime}
+            )
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" parameterType="java.util.List">
+        INSERT INTO learning_features (
+        student_id, student_name, student_no, course_id, course_name, feature_date,
+        week_of_semester, video_watch_time, video_completion_rate, video_engagement,
+        homework_submit_rate, homework_avg_score, homework_delay_count, homework_quality_score,
+        login_frequency, login_regularity, last_login_days, study_consistency, study_intensity,
+        interaction_level, focus_score, risk_score, risk_level, risk_probability,
+        feature_vector, created_time, updated_time
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.studentId}, #{item.studentName}, #{item.studentNo},
+            #{item.courseId}, #{item.courseName}, #{item.featureDate},
+            #{item.weekOfSemester}, #{item.videoWatchTime}, #{item.videoCompletionRate}, #{item.videoEngagement},
+            #{item.homeworkSubmitRate}, #{item.homeworkAvgScore}, #{item.homeworkDelayCount}, #{item.homeworkQualityScore},
+            #{item.loginFrequency}, #{item.loginRegularity}, #{item.lastLoginDays},
+            #{item.studyConsistency}, #{item.studyIntensity}, #{item.interactionLevel}, #{item.focusScore},
+            #{item.riskScore}, #{item.riskLevel}, #{item.riskProbability},
+            #{item.featureVector}, #{item.createdTime}, #{item.updatedTime}
+            )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+        video_watch_time = VALUES(video_watch_time),
+        video_completion_rate = VALUES(video_completion_rate),
+        video_engagement = VALUES(video_engagement),
+        homework_submit_rate = VALUES(homework_submit_rate),
+        homework_avg_score = VALUES(homework_avg_score),
+        login_frequency = VALUES(login_frequency),
+        focus_score = VALUES(focus_score),
+        updated_time = NOW();
+    </insert>
+
+
+    <update id="updateRiskInfo">
+        UPDATE learning_features
+        SET risk_score = #{riskScore},
+            risk_level = #{riskLevel},
+            risk_probability = #{riskProbability},
+            updated_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectTrainingData" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE risk_score IS NOT NULL
+        ORDER BY RAND()
+        <if test="limit != null">LIMIT #{limit}</if>
+    </select>
+
+    <select id="selectRecentFeatures" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM learning_features
+        WHERE feature_date >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        ORDER BY feature_date DESC, id DESC
+    </select>
+
+
+    <delete id="deleteBeforeDate">
+        DELETE FROM learning_features
+        WHERE feature_date &lt; #{date}
+    </delete>
+
+
+    <!-- 从student_behavior数据计算特征 -->
+    <select id="calculateFeaturesFromBehavior" resultMap="BaseResultMap">
+        SELECT
+            NULL as id,
+            sb.student_id,
+            s.name as student_name,
+            s.student_no,
+            sb.course_id,
+            c.course_name as course_name,
+            sb.behavior_date as feature_date,
+            WEEK(sb.behavior_date, 1) as week_of_semester,
+
+            -- 视频相关特征（分钟、百分比）
+            AVG(sb.video_watch_time) as video_watch_time,
+            AVG(sb.video_completion_rate) / 100.0 as video_completion_rate,
+            -- 视频参与度：用“学习进度”近似（0-100 -> 0-1）
+            AVG(sb.learning_progress) / 100.0 as video_engagement,
+
+            -- 作业相关特征
+            -- 作业提交率：用 active_days/7 近似（0-7 -> 0-1），你也可以改成更合理的口径
+            LEAST(1.0, AVG(sb.active_days) / 7.0) as homework_submit_rate,
+            AVG(sb.homework_avg_score) as homework_avg_score,
+            0 as homework_delay_count,
+            AVG(sb.homework_avg_score) as homework_quality_score,
+
+            -- 登录相关特征
+            -- login_frequency 你表里是“登录次数”，这里按天聚合时用 SUM
+            SUM(sb.login_count) as login_frequency,
+            0 as login_regularity,
+            -- last_login_days：以最后登录时间计算
+            CASE
+                WHEN MAX(sb.last_login_time) IS NULL THEN NULL
+                ELSE DATEDIFF(CURDATE(), DATE(MAX(sb.last_login_time)))
+                END as last_login_days,
+
+            -- 学习行为特征（用现有字段近似）
+            -- 学习持续性：active_days/7 (0-1)
+            LEAST(1.0, AVG(sb.active_days) / 7.0) as study_consistency,
+            -- 学习强度：total_online_time 归一化到 0-1（这里用 600 分钟=10小时封顶）
+            LEAST(1.0, AVG(sb.total_online_time) / 600.0) as study_intensity,
+            -- 互动水平：interaction_count 归一化（这里用 50 次封顶）
+            LEAST(1.0, AVG(sb.interaction_count) / 50.0) as interaction_level,
+            -- 专注度：表里是 1-10，这里转成 0-1
+            LEAST(1.0, AVG(sb.focus_score) / 10.0) as focus_score,
+
+            -- 风险相关（初始值）
+            0.0 as risk_score,
+            'LOW' as risk_level,
+            0.0 as risk_probability,
+            NULL as feature_vector,
+            NOW() as created_time,
+            NOW() as updated_time
+
+        FROM student_behavior sb
+                 LEFT JOIN student s ON sb.student_id = s.id
+                 LEFT JOIN course c ON sb.course_id = c.id
+        WHERE sb.behavior_date >= DATE_SUB(CURDATE(), INTERVAL #{days} DAY)
+        GROUP BY sb.student_id, sb.course_id, sb.behavior_date
+        ORDER BY sb.student_id, sb.course_id, sb.behavior_date
+    </select>
+
+    <!-- 删除指定学生、课程、日期的重复特征记录 -->
+    <delete id="deleteByStudentCourseDate">
+        DELETE FROM learning_features
+        WHERE student_id = #{studentId}
+          AND course_id = #{courseId}
+          AND feature_date = #{featureDate}
+    </delete>
+
+    <update id="updateHomeworkPart">
+        UPDATE learning_features
+        SET homework_submit_rate   = #{homeworkSubmitRate},
+            homework_avg_score     = #{homeworkAvgScore},
+            homework_delay_count   = #{homeworkDelayCount},
+            homework_quality_score = #{homeworkQualityScore},
+            updated_time           = #{updatedTime}
+        WHERE id = #{id}
+    </update>
+
+
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.TeacherMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="TeacherResultMap" type="com.example.entity.Teacher">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="role" column="role"/>
+        <result property="teacherNo" column="teacher_no"/>
+        <result property="department" column="department"/>
+        <result property="title" column="title"/>
+        <result property="researchArea" column="research_area"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="classIds" column="class_ids"/>
+        <result property="courseCount" column="course_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 查询所有教师 -->
+    <select id="selectAll" resultMap="TeacherResultMap">
+        select * from `teacher`
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="teacherNo != null and teacherNo != ''">
+                and teacher_no like concat('%', #{teacherNo}, '%')
+            </if>
+            <if test="department != null and department != ''">
+                and department like concat('%', #{department}, '%')
+            </if>
+            <if test="title != null and title != ''">
+                and title = #{title}
+            </if>
+            <if test="researchArea != null and researchArea != ''">
+                and research_area like concat('%', #{researchArea}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by teacher_no asc
+    </select>
+
+    <!-- 根据ID查询教师 -->
+    <select id="selectById" resultMap="TeacherResultMap">
+        select * from `teacher` where id = #{id}
+    </select>
+
+    <!-- 根据工号查询教师 -->
+    <select id="selectByTeacherNo" resultMap="TeacherResultMap">
+        select * from `teacher` where teacher_no = #{teacherNo}
+    </select>
+
+    <!-- 根据用户名查询教师 -->
+    <select id="selectByUsername" resultMap="TeacherResultMap">
+        select * from `teacher` where username = #{username}
+    </select>
+
+    <!-- 根据条件查询（用于登录验证） -->
+    <select id="selectByCondition" resultMap="TeacherResultMap">
+        select * from `teacher`
+        <where>
+            <if test="username != null">and username = #{username}</if>
+            <if test="password != null">and password = #{password}</if>
+            <if test="status != null">and status = #{status}</if>
+        </where>
+        limit 1
+    </select>
+
+    <!-- 删除教师 -->
+    <delete id="deleteById">
+        delete from `teacher` where id = #{id}
+    </delete>
+
+    <!-- 新增教师 -->
+    <insert id="insert" parameterType="com.example.entity.Teacher" useGeneratedKeys="true" keyProperty="id">
+        insert into `teacher` (
+            username, password, name, avatar, role,
+            teacher_no, department, title, research_area,
+            phone, email, class_ids, course_count,
+            create_time, update_time, status
+        ) values (
+                     #{username}, #{password}, #{name}, #{avatar}, #{role},
+                     #{teacherNo}, #{department}, #{title}, #{researchArea},
+                     #{phone}, #{email}, #{classIds}, #{courseCount},
+                     #{createTime}, #{updateTime}, #{status}
+                 )
+    </insert>
+
+    <!-- 修改教师 -->
+    <update id="updateById" parameterType="com.example.entity.Teacher">
+        update `teacher`
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="teacherNo != null">teacher_no = #{teacherNo},</if>
+            <if test="department != null">department = #{department},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="researchArea != null">research_area = #{researchArea},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="classIds != null">class_ids = #{classIds},</if>
+            <if test="courseCount != null">course_count = #{courseCount},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 统计教师数量 -->
+    <select id="count" resultType="java.lang.Integer">
+        select count(*) from `teacher`
+        <where>
+            <if test="department != null and department != ''">
+                and department = #{department}
+            </if>
+            <if test="title != null and title != ''">
+                and title = #{title}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据院系查询教师 -->
+    <select id="selectByDepartment" resultMap="TeacherResultMap">
+        select * from `teacher`
+        where department like concat('%', #{department}, '%')
+        order by teacher_no asc
+    </select>
+
+    <!-- 更新教师课程数量 -->
+    <update id="updateCourseCount">
+        update `teacher`
+        set course_count = #{courseCount},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 批量插入教师 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into `teacher` (
+        username, password, name, role,
+        teacher_no, department, title,
+        create_time, update_time, status
+        ) values
+        <foreach collection="list" item="teacher" separator=",">
+            (
+            #{teacher.username}, #{teacher.password}, #{teacher.name}, 'TEACHER',
+            #{teacher.teacherNo}, #{teacher.department}, #{teacher.title},
+            #{teacher.createTime}, #{teacher.updateTime}, '正常'
+            )
+        </foreach>
+    </insert>
+
+</mapper>
