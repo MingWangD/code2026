@@ -242,6 +242,26 @@ const data = reactive({
   refreshSec: 3,
 });
 
+const okCode = (code) => code === "200" || code === 200;
+
+const pickDefaultStudent = () => {
+  if (!data.students || data.students.length === 0) {
+    data.studentId = null;
+    return;
+  }
+  const exists = data.students.some((s) => Number(s.id) === Number(data.studentId));
+  if (!exists) data.studentId = data.students[0].id;
+};
+
+const pickDefaultCourse = () => {
+  if (!data.courses || data.courses.length === 0) {
+    data.courseId = null;
+    return;
+  }
+  const exists = data.courses.some((c) => Number(c.id) === Number(data.courseId));
+  if (!exists) data.courseId = data.courses[0].id;
+};
+
 const studentLabel = (s) => {
   const name = s.name || s.studentName || "";
   const no = s.studentNo ? `（${s.studentNo}）` : "";
@@ -287,12 +307,13 @@ const loadStudents = async () => {
   data.loadingStudents = true;
   try {
     const res = await request.get("/student/selectAll");
-    if (res.code === "200" || res.code === 200) {
-      data.students = Array.isArray(res.data) ? res.data : [];
-      if (data.students.length === 0) ElMessage.warning("学生列表为空：请先准备学生数据");
-    }
-    else ElMessage.error(res.msg || "加载学生列表失败");
+    if (okCode(res.code)) {
+      data.students = res.data || [];
+      pickDefaultStudent();
+    } else ElMessage.error(res.msg || "加载学生列表失败");
   } catch (e) {
+    data.students = [];
+    data.studentId = null;
     ElMessage.error("加载学生列表失败：请检查后端是否启动/跨域/接口路径");
   } finally {
     data.loadingStudents = false;
@@ -303,12 +324,13 @@ const loadCourses = async () => {
   data.loadingCourses = true;
   try {
     const res = await request.get("/course/selectAll");
-    if (res.code === "200" || res.code === 200) {
-      data.courses = Array.isArray(res.data) ? res.data : [];
-      if (data.courses.length === 0) ElMessage.warning("课程列表为空：请先准备课程数据");
-    }
-    else ElMessage.error(res.msg || "加载课程列表失败");
+    if (okCode(res.code)) {
+      data.courses = res.data || [];
+      pickDefaultCourse();
+    } else ElMessage.error(res.msg || "加载课程列表失败");
   } catch (e) {
+    data.courses = [];
+    data.courseId = null;
     ElMessage.error("加载课程列表失败：请检查后端是否启动/跨域/接口路径");
   } finally {
     data.loadingCourses = false;
@@ -333,8 +355,8 @@ const loadEvents = async () => {
       params: { studentId: data.studentId, courseId: data.courseId },
     });
 
-    if (res.code === "200" || res.code === 200) {
-      data.list = Array.isArray(res.data) ? res.data : [];
+    if (okCode(res.code)) {
+      data.list = res.data || [];
       data.lastUpdate = new Date().toLocaleString();
       if (data.list.length === 0) {
         data.timelineHint = `学生ID ${data.studentId} / 课程ID ${data.courseId} 暂无时间线数据（可能尚未产生行为事件）`;
@@ -345,14 +367,10 @@ const loadEvents = async () => {
       }
     } else {
       data.list = [];
-      data.timelineHint = res.msg || "时间线查询失败";
-      data.timelineHintType = "error";
       ElMessage.error(res.msg || "查询失败");
     }
   } catch (e) {
     data.list = [];
-    data.timelineHint = "请求失败：请检查后端服务与接口 /behavior/event/selectByStudentAndCourse";
-    data.timelineHintType = "error";
     ElMessage.error("请求失败，请检查后端是否启动/跨域配置");
   } finally {
     data.loading = false;
@@ -369,7 +387,7 @@ const loadInsights = async () => {
       params: { studentId: data.studentId, courseId: data.courseId },
     });
 
-    if (res.code === "200" || res.code === 200) {
+    if (okCode(res.code)) {
       data.insights = res.data || null;
       const eventCount = Number(data.insights?.eventCount || 0);
       if (!data.insights || eventCount === 0) {
@@ -381,14 +399,10 @@ const loadInsights = async () => {
       }
     } else {
       data.insights = null;
-      data.insightsHint = res.msg || "加载判读失败";
-      data.insightsHintType = "error";
       ElMessage.error(res.msg || "加载判读失败");
     }
   } catch (e) {
     data.insights = null;
-    data.insightsHint = "请求失败：请检查 /teacher/behavior/insights 接口是否可用";
-    data.insightsHintType = "error";
     ElMessage.error("加载判读失败：请检查 /teacher/behavior/insights 是否可用");
   } finally {
     data.loadingInsights = false;
@@ -449,6 +463,9 @@ watch(
 
 onMounted(async () => {
   await reloadBaseData();
+  if (data.studentId && data.courseId) {
+    await loadAll();
+  }
 });
 
 onBeforeUnmount(() => stopTimer());

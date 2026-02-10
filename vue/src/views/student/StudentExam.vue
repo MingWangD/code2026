@@ -58,6 +58,8 @@ const resultMessage=ref("");
 
 const getBase = () => (props.apiBase || (import.meta.env.VITE_BASE_URL || "")).replace(/\/$/, "");
 
+const getBase = () => (props.apiBase || (import.meta.env.VITE_BASE_URL || "")).replace(/\/$/, "");
+
 async function load(){
   if (!props.courseId) {
     list.value = [];
