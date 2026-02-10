@@ -1,4 +1,4 @@
-import request from '../utils/request';
+﻿import request from '../utils/request';
 
 // 健康检查接口定义
 export const healthAPI = {

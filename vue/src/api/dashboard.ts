@@ -8,6 +8,7 @@ export const getWarningTrend = async (days: number = 30) => {
         const response = await request.get(`${API_BASE}/warning-trend`, {
             params: { days }
         });
+        // request.js 已经返回 response.data，这里直接返回
         return response;
     } catch (error) {
         console.error('获取趋势数据失败:', error);
@@ -29,30 +30,24 @@ const formatDateSafe = (timestamp: number): string => {
     return `${monthStr}-${dayStr}`;
 };
 
-// 模拟数据生成（后备方案）- 完全避免Date构造函数问题
+// 模拟数据生成（后备方案）
 const generateMockTrendData = (days: number) => {
     const dates: string[] = [];
     const counts: number[] = [];
     let total = 0;
 
-    // 使用当前时间戳
     const now = Date.now();
     const oneDayMs = 24 * 60 * 60 * 1000;
 
     for (let i = days - 1; i >= 0; i--) {
-        // 计算过去第i天的时间戳
         const pastDateTimestamp = now - (i * oneDayMs);
-
-        // 格式化日期
         dates.push(formatDateSafe(pastDateTimestamp));
 
-        // 生成随机数据
         const count = 50 + Math.floor(Math.random() * 30);
         counts.push(count);
         total += count;
     }
 
-    // 计算开始和结束日期字符串
     const endDate = new Date(now);
     const startDate = new Date(now - ((days - 1) * oneDayMs));
 
@@ -77,7 +72,6 @@ export const getDashboardOverview = async () => {
         return response;
     } catch (error) {
         console.error('获取总览数据失败:', error);
-        // 返回模拟总览数据
         return {
             code: 200,
             message: 'success (mock overview)',
