@@ -61,12 +61,17 @@ public class TeacherBehaviorInsightController {
 
         // 事件按类型分组
         Map<String, List<StudentBehavior>> byType = events.stream()
-                .collect(Collectors.groupingBy(e -> e.getBehaviorType() == null ? "UNKNOWN" : e.getBehaviorType()));
+                .collect(Collectors.groupingBy(e -> {
+                    String t = e.getBehaviorType();
+                    return (t == null || t.isBlank()) ? "UNKNOWN" : t.trim().toUpperCase(Locale.ROOT);
+                }));
 
         int loginCount = byType.getOrDefault("LOGIN", Collections.emptyList()).size();
 
         List<StudentBehavior> videoEvents = byType.getOrDefault("VIDEO_WATCH", Collections.emptyList());
-        int videoCount = videoEvents.size();
+        int videoProgressCount = byType.getOrDefault("VIDEO_PROGRESS", Collections.emptyList()).size();
+        int videoCompleteCount = byType.getOrDefault("VIDEO_COMPLETE", Collections.emptyList()).size();
+        int videoCount = videoEvents.size() + videoProgressCount + videoCompleteCount;
         // 约定：你当前 VIDEO_WATCH 的 watchTime/completionRate 怎么存？
         // 你现有 StudentBehavior 字段里只有 score / attemptNo / relatedId / isLate
         // 所以这里先做“保底”：只统计次数，不统计时长/完成率（后面再补字段）
@@ -82,7 +87,8 @@ public class TeacherBehaviorInsightController {
                 ? hwEvents.stream().filter(e -> e.getScore() != null).mapToDouble(StudentBehavior::getScore).average().getAsDouble()
                 : null;
 
-        int examCount = byType.getOrDefault("EXAM", Collections.emptyList()).size();
+        int examCount = byType.getOrDefault("EXAM", Collections.emptyList()).size()
+                + byType.getOrDefault("EXAM_SUBMIT", Collections.emptyList()).size();
 
         // ---- 规则标签（可解释）----
         List<String> tags = new ArrayList<>();
@@ -107,6 +113,9 @@ public class TeacherBehaviorInsightController {
         Map<String, Object> metrics = new LinkedHashMap<>();
         metrics.put("loginCount", loginCount);
         metrics.put("videoCount", videoCount);
+        metrics.put("videoWatchCount", videoEvents.size());
+        metrics.put("videoProgressCount", videoProgressCount);
+        metrics.put("videoCompleteCount", videoCompleteCount);
         metrics.put("homeworkSubmitCount", hwSubmitCount);
         metrics.put("homeworkLateCount", hwLateCount);
         metrics.put("homeworkAvgScore", hwAvgScore);

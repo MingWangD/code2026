@@ -65,6 +65,15 @@
         最近更新时间：{{ data.lastUpdate || '-' }}；
         当前记录数：{{ data.list.length }}
       </div>
+
+      <el-alert
+          v-if="baseStatusMessage"
+          :type="baseStatusType"
+          :closable="false"
+          show-icon
+          style="margin-top: 10px;"
+          :title="baseStatusMessage"
+      />
     </div>
 
     <!-- ✅ 行为判读层（A） -->
@@ -83,6 +92,14 @@
       </div>
 
       <div v-else style="margin-top: 10px;">
+        <el-alert
+            v-if="data.insightsHint"
+            :title="data.insightsHint"
+            :type="data.insightsHintType"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 10px;"
+        />
         <div style="color:#333; font-size: 14px; line-height: 22px;">
           <div style="margin-bottom: 6px;">
             <span style="color:#666;">日期：</span>{{ data.insights?.date || '-' }}
@@ -132,20 +149,31 @@
         </el-button>
       </div>
 
+      <el-alert
+          v-if="data.timelineHint"
+          :title="data.timelineHint"
+          :type="data.timelineHintType"
+          :closable="false"
+          show-icon
+          style="margin-bottom: 10px;"
+      />
+
       <el-table :data="data.list" stripe v-loading="data.loading" style="width: 100%">
         <el-table-column label="时间" prop="behaviorTime" width="180" />
         <el-table-column label="类型" width="150">
           <template #default="scope">
             <el-tag v-if="scope.row.behaviorType === 'HOMEWORK_SUBMIT'" type="success">作业提交</el-tag>
-            <el-tag v-else-if="scope.row.behaviorType === 'VIDEO_WATCH'" type="info">观看视频</el-tag>
+            <el-tag v-else-if="scope.row.behaviorType === 'VIDEO_WATCH' || scope.row.behaviorType === 'VIDEO_PROGRESS'" type="info">视频学习</el-tag>
             <el-tag v-else-if="scope.row.behaviorType === 'LOGIN'" type="warning">登录</el-tag>
-            <el-tag v-else-if="scope.row.behaviorType === 'EXAM'" type="danger">考试</el-tag>
-            <el-tag v-else>{{ scope.row.behaviorType }}</el-tag>
+            <el-tag v-else-if="scope.row.behaviorType === 'EXAM' || scope.row.behaviorType === 'EXAM_SUBMIT'" type="danger">考试</el-tag>
+            <el-tag v-else>{{ scope.row.behaviorType || 'UNKNOWN' }}</el-tag>
           </template>
         </el-table-column>
 
         <el-table-column label="关联ID" prop="relatedId" width="140" />
-        <el-table-column label="得分/完成率" prop="score" width="140" />
+        <el-table-column label="得分/完成率" width="140">
+          <template #default="scope">{{ formatScore(scope.row.score) }}</template>
+        </el-table-column>
 
         <el-table-column label="迟交" width="90">
           <template #default="scope">
@@ -183,7 +211,7 @@
 
 <script setup>
 import request from "../../utils/request";
-import { reactive, onBeforeUnmount, watch, onMounted } from "vue";
+import { computed, reactive, onBeforeUnmount, watch, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 
 let timer = null;
@@ -203,6 +231,11 @@ const data = reactive({
   insights: null,
   loadingInsights: false,
 
+  timelineHint: "请选择学生与课程后查询时间线",
+  timelineHintType: "info",
+  insightsHint: "请选择学生与课程后查看判读",
+  insightsHintType: "info",
+
   lastUpdate: "",
 
   autoRefresh: true,
@@ -220,6 +253,32 @@ const courseLabel = (c) => {
   return `${name} - ID:${c.id}`;
 };
 
+const selectedStudentLabel = computed(() => {
+  const s = data.students.find((i) => Number(i.id) === Number(data.studentId));
+  return s ? studentLabel(s) : "未选择学生";
+});
+
+const selectedCourseLabel = computed(() => {
+  const c = data.courses.find((i) => Number(i.id) === Number(data.courseId));
+  return c ? courseLabel(c) : "未选择课程";
+});
+
+const baseStatusType = computed(() => {
+  if (data.loadingStudents || data.loadingCourses) return "info";
+  if (!data.students.length || !data.courses.length) return "warning";
+  return "success";
+});
+
+const baseStatusMessage = computed(() => {
+  if (data.loadingStudents || data.loadingCourses) return "正在加载学生/课程列表...";
+  if (!data.students.length && !data.courses.length) return "学生与课程列表均为空：请检查基础数据或接口返回。";
+  if (!data.students.length) return "学生列表为空：可先检查 /student/selectAll 返回。";
+  if (!data.courses.length) return "课程列表为空：可先检查 /course/selectAll 返回。";
+  return `当前选择：${selectedStudentLabel.value} / ${selectedCourseLabel.value}`;
+});
+
+const formatScore = (score) => (score === null || score === undefined || score === "") ? "-" : score;
+
 const reloadBaseData = async () => {
   await Promise.all([loadStudents(), loadCourses()]);
 };
@@ -228,7 +287,10 @@ const loadStudents = async () => {
   data.loadingStudents = true;
   try {
     const res = await request.get("/student/selectAll");
-    if (res.code === "200" || res.code === 200) data.students = res.data || [];
+    if (res.code === "200" || res.code === 200) {
+      data.students = Array.isArray(res.data) ? res.data : [];
+      if (data.students.length === 0) ElMessage.warning("学生列表为空：请先准备学生数据");
+    }
     else ElMessage.error(res.msg || "加载学生列表失败");
   } catch (e) {
     ElMessage.error("加载学生列表失败：请检查后端是否启动/跨域/接口路径");
@@ -241,7 +303,10 @@ const loadCourses = async () => {
   data.loadingCourses = true;
   try {
     const res = await request.get("/course/selectAll");
-    if (res.code === "200" || res.code === 200) data.courses = res.data || [];
+    if (res.code === "200" || res.code === 200) {
+      data.courses = Array.isArray(res.data) ? res.data : [];
+      if (data.courses.length === 0) ElMessage.warning("课程列表为空：请先准备课程数据");
+    }
     else ElMessage.error(res.msg || "加载课程列表失败");
   } catch (e) {
     ElMessage.error("加载课程列表失败：请检查后端是否启动/跨域/接口路径");
@@ -269,12 +334,25 @@ const loadEvents = async () => {
     });
 
     if (res.code === "200" || res.code === 200) {
-      data.list = res.data || [];
+      data.list = Array.isArray(res.data) ? res.data : [];
       data.lastUpdate = new Date().toLocaleString();
+      if (data.list.length === 0) {
+        data.timelineHint = `学生ID ${data.studentId} / 课程ID ${data.courseId} 暂无时间线数据（可能尚未产生行为事件）`;
+        data.timelineHintType = "info";
+      } else {
+        data.timelineHint = `已加载 ${data.list.length} 条时间线事件`;
+        data.timelineHintType = "success";
+      }
     } else {
+      data.list = [];
+      data.timelineHint = res.msg || "时间线查询失败";
+      data.timelineHintType = "error";
       ElMessage.error(res.msg || "查询失败");
     }
   } catch (e) {
+    data.list = [];
+    data.timelineHint = "请求失败：请检查后端服务与接口 /behavior/event/selectByStudentAndCourse";
+    data.timelineHintType = "error";
     ElMessage.error("请求失败，请检查后端是否启动/跨域配置");
   } finally {
     data.loading = false;
@@ -293,10 +371,24 @@ const loadInsights = async () => {
 
     if (res.code === "200" || res.code === 200) {
       data.insights = res.data || null;
+      const eventCount = Number(data.insights?.eventCount || 0);
+      if (!data.insights || eventCount === 0) {
+        data.insightsHint = `学生ID ${data.studentId} / 课程ID ${data.courseId} 今日暂无可判读数据`;
+        data.insightsHintType = "info";
+      } else {
+        data.insightsHint = `已生成判读：共 ${eventCount} 条事件`;
+        data.insightsHintType = "success";
+      }
     } else {
+      data.insights = null;
+      data.insightsHint = res.msg || "加载判读失败";
+      data.insightsHintType = "error";
       ElMessage.error(res.msg || "加载判读失败");
     }
   } catch (e) {
+    data.insights = null;
+    data.insightsHint = "请求失败：请检查 /teacher/behavior/insights 接口是否可用";
+    data.insightsHintType = "error";
     ElMessage.error("加载判读失败：请检查 /teacher/behavior/insights 是否可用");
   } finally {
     data.loadingInsights = false;
@@ -310,6 +402,12 @@ const loadAll = async () => {
 };
 
 const onSelectionChange = () => {
+  data.list = [];
+  data.insights = null;
+  data.timelineHint = "正在根据新选择加载时间线...";
+  data.timelineHintType = "info";
+  data.insightsHint = "正在根据新选择加载判读...";
+  data.insightsHintType = "info";
   if (data.studentId && data.courseId) loadAll();
 };
 
@@ -318,6 +416,10 @@ const reset = () => {
   data.courseId = null;
   data.list = [];
   data.insights = null;
+  data.timelineHint = "请选择学生与课程后查询时间线";
+  data.timelineHintType = "info";
+  data.insightsHint = "请选择学生与课程后查看判读";
+  data.insightsHintType = "info";
   data.lastUpdate = "";
 };
 
