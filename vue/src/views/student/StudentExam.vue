@@ -24,7 +24,7 @@
     <div v-if="paper" class="paper">
       <h4>{{ paper.exam.exam_name || paper.exam.examName }}</h4>
       <div v-for="q in paper.questions" :key="q.question_id" class="q">
-        <div class="qt">{{ q.content }}</div>
+        <div class="qt">{{ q.content || q.stem || "（题干缺失）" }}</div>
         <label v-for="op in ['A','B','C','D']" :key="op">
           <input type="radio" :name="'q'+q.question_id" :value="op"
                  v-model="answers[q.question_id]" />
@@ -75,10 +75,22 @@ async function load(){
   }
 }
 async function open(id){
-  const r=await fetch(`${getBase()}/exam/paper/${id}`);
-  const j=await r.json();
-  paper.value=j.data;
-  answers.value={};
+  try {
+    const r = await fetch(`${getBase()}/exam/paper/${id}`);
+    const j = await r.json();
+
+    if (!r.ok || j?.code !== "200" || !j?.data) {
+      paper.value = null;
+      alert(`试卷加载失败：${j?.msg || `HTTP ${r.status}`}`);
+      return;
+    }
+
+    paper.value = j.data;
+    answers.value = {};
+  } catch (e) {
+    paper.value = null;
+    alert("试卷加载失败，请检查后端接口或题库数据");
+  }
 }
 async function submit(){
   if (!resolvedStudentId.value || !props.courseId || !paper.value?.exam?.id) {
