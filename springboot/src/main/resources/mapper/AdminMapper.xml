@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.AdminMapper">
+
+    <!-- 查询所有管理员 -->
+    <select id="selectAll" resultType="com.example.entity.Admin">
+        select * from `admin`
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="username != null and username != ''">
+                and username like concat('%', #{username}, '%')
+            </if>
+            <if test="department != null and department != ''">
+                and department like concat('%', #{department}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="permissionLevel != null and permissionLevel != ''">
+                and permission_level = #{permissionLevel}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" resultType="com.example.entity.Admin">
+        select * from `admin` where id = #{id}
+    </select>
+
+    <!-- 根据用户名查询 -->
+    <select id="selectByUsername" resultType="com.example.entity.Admin">
+        select * from `admin` where username = #{username}
+    </select>
+
+    <!-- 删除管理员 -->
+    <delete id="deleteById">
+        delete from `admin` where id = #{id}
+    </delete>
+
+    <!-- 新增管理员 -->
+    <insert id="insert" parameterType="com.example.entity.Admin" useGeneratedKeys="true" keyProperty="id">
+        insert into `admin` (
+            username, password, name, avatar, role,
+            admin_no, department, phone, permission_level,
+            create_time, update_time, status
+        ) values (
+                     #{username}, #{password}, #{name}, #{avatar}, #{role},
+                     #{adminNo}, #{department}, #{phone}, #{permissionLevel},
+                     #{createTime}, #{updateTime}, #{status}
+                 )
+    </insert>
+
+    <!-- 修改管理员 -->
+    <update id="updateById" parameterType="com.example.entity.Admin">
+        update `admin`
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="adminNo != null">admin_no = #{adminNo},</if>
+            <if test="department != null">department = #{department},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="permissionLevel != null">permission_level = #{permissionLevel},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="lastLoginTime != null">last_login_time = #{lastLoginTime},</if>
+            <if test="loginCount != null">login_count = #{loginCount},</if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 统计管理员数量 -->
+    <select id="count" resultType="java.lang.Integer">
+        select count(*) from `admin`
+        <where>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="department != null and department != ''">
+                and department = #{department}
+            </if>
+        </where>
+    </select>
+
+    <!-- 更新登录信息 -->
+    <update id="updateLoginInfo">
+        update `admin`
+        set last_login_time = #{lastLoginTime},
+            login_count = login_count + 1,
+            update_time = #{updateTime}
+        where id = #{id}
+    </update>
+
+    <!-- 根据条件查询（用于登录验证） -->
+    <select id="selectByCondition" resultType="com.example.entity.Admin">
+        select * from `admin`
+        <where>
+            <if test="username != null">and username = #{username}</if>
+            <if test="password != null">and password = #{password}</if>
+            <if test="status != null">and status = #{status}</if>
+            <if test="role != null">and role = #{role}</if>
+        </where>
+        limit 1
+    </select>
+
+</mapper>

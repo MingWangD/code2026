@@ -1,0 +1,175 @@
+<template>
+  <div id="app">
+    <div class="container">
+      <h1>🎓 教育风险预警系统 - 前端开发测试</h1>
+      <div class="status-card">
+        <h2>🔗 后端连接测试</h2>
+        <div v-if="loading">⏳ 测试连接中...</div>
+        <div v-else-if="error" class="error">❌ 连接失败: {{ error }}</div>
+        <div v-else class="success">
+          <p>✅ 后端连接成功！</p>
+          <p>📊 状态: {{ pingData?.status }}</p>
+          <p>💬 消息: {{ pingData?.message }}</p>
+          <p>🕐 时间: {{ formatTime(pingData?.timestamp) }}</p>
+        </div>
+        <button @click="testConnection" :disabled="loading">
+          {{ loading ? '测试中...' : '重新测试' }}
+        </button>
+      </div>
+
+      <div class="links">
+        <router-link to="/">首页</router-link> |
+        <router-link to="/dashboard">仪表盘</router-link> |
+        <router-link to="/risk">风险监控</router-link> |
+        <router-link to="/monitor">系统监控</router-link>
+      </div>
+
+      <router-view />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { healthAPI } from './api/health'
+
+interface PingData {
+  status: string
+  timestamp: string
+  message: string
+}
+
+const loading = ref(false)
+const error = ref<string | null>(null)
+const pingData = ref<PingData | null>(null)
+
+const testConnection = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    const data = await healthAPI.ping()
+    pingData.value = data
+    console.log('✅ API响应:', data)
+  } catch (err: any) {
+    error.value = err.message || '未知错误'
+    console.error('❌ API错误:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const formatTime = (timestamp?: string) => {
+  if (!timestamp) return ''
+  return new Date(timestamp).toLocaleString('zh-CN')
+}
+
+// 页面加载时自动测试
+onMounted(() => {
+  testConnection()
+})
+</script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+#app {
+  padding: 20px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.status-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-left: 4px solid #667eea;
+}
+
+.status-card h2 {
+  color: #555;
+  margin-bottom: 15px;
+}
+
+.error {
+  color: #dc3545;
+  background: #f8d7da;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.success {
+  color: #155724;
+  background: #d4edda;
+  padding: 15px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+  transition: background 0.3s;
+}
+
+button:hover:not(:disabled) {
+  background: #5a67d8;
+}
+
+button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.links {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.links a {
+  color: #667eea;
+  text-decoration: none;
+  margin: 0 10px;
+  font-weight: 500;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+.links a.router-link-active {
+  color: #764ba2;
+  font-weight: bold;
+}
+</style>

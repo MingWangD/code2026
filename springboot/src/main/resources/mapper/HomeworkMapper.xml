@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.HomeworkMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="HomeworkResultMap" type="com.example.entity.Homework">
+        <id property="id" column="id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="requirements" column="requirements"/>
+        <result property="attachmentUrl" column="attachment_url"/>
+        <result property="startTime" column="start_time"/>
+        <result property="deadline" column="deadline"/>
+        <result property="totalScore" column="total_score"/>
+        <result property="submitCount" column="submit_count"/>
+        <result property="gradedCount" column="graded_count"/>
+        <result property="averageScore" column="average_score"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <!-- 查询所有作业 -->
+    <select id="selectAll" resultMap="HomeworkResultMap">
+        select * from `homework`
+        <where>
+            <if test="title != null and title != ''">
+                and title like concat('%', #{title}, '%')
+            </if>
+            <if test="courseId != null">
+                and course_id = #{courseId}
+            </if>
+            <if test="courseName != null and courseName != ''">
+                and course_name like concat('%', #{courseName}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+        order by deadline asc
+    </select>
+
+    <!-- 根据ID查询作业 -->
+    <select id="selectById" resultMap="HomeworkResultMap">
+        select * from `homework` where id = #{id}
+    </select>
+
+    <!-- 根据课程ID查询作业 -->
+    <select id="selectByCourseId" resultMap="HomeworkResultMap">
+        select * from `homework` where course_id = #{courseId}
+        order by deadline asc
+    </select>
+
+    <!-- 根据课程ID和状态查询作业 -->
+    <select id="selectByCourseIdAndStatus" resultMap="HomeworkResultMap">
+        select * from `homework`
+        where course_id = #{courseId} and status = #{status}
+        order by deadline asc
+    </select>
+
+    <!-- 删除作业 -->
+    <delete id="deleteById">
+        delete from `homework` where id = #{id}
+    </delete>
+
+    <!-- 新增作业 -->
+    <insert id="insert" parameterType="com.example.entity.Homework" useGeneratedKeys="true" keyProperty="id">
+        insert into `homework` (
+            course_id, course_name, title, description, requirements,
+            attachment_url, start_time, deadline, total_score,
+            submit_count, graded_count, average_score, status,
+            create_time, update_time
+        ) values (
+                     #{courseId}, #{courseName}, #{title}, #{description}, #{requirements},
+                     #{attachmentUrl}, #{startTime}, #{deadline}, #{totalScore},
+                     #{submitCount}, #{gradedCount}, #{averageScore}, #{status},
+                     #{createTime}, #{updateTime}
+                 )
+    </insert>
+
+    <!-- 修改作业 -->
+    <update id="updateById" parameterType="com.example.entity.Homework">
+        update `homework`
+        <set>
+            <if test="courseId != null">course_id = #{courseId},</if>
+            <if test="courseName != null">course_name = #{courseName},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="requirements != null">requirements = #{requirements},</if>
+            <if test="attachmentUrl != null">attachment_url = #{attachmentUrl},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="deadline != null">deadline = #{deadline},</if>
+            <if test="totalScore != null">total_score = #{totalScore},</if>
+            <if test="submitCount != null">submit_count = #{submitCount},</if>
+            <if test="gradedCount != null">graded_count = #{gradedCount},</if>
+            <if test="averageScore != null">average_score = #{averageScore},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 统计作业数量 -->
+    <select id="count" resultType="java.lang.Integer">
+        select count(*) from `homework`
+        <where>
+            <if test="courseId != null">
+                and course_id = #{courseId}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 更新作业统计信息 -->
+    <update id="updateStatistics">
+        update `homework`
+        set submit_count = #{submitCount},
+            graded_count = #{gradedCount},
+            average_score = #{averageScore},
+            status = #{status},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 根据截止时间查询即将截止的作业 -->
+    <select id="selectUpcomingDeadlines" resultMap="HomeworkResultMap">
+        select * from `homework`
+        where status = '进行中'
+          and deadline between now() and date_add(now(), interval #{days} day)
+        order by deadline asc
+    </select>
+
+    <!-- 分页查询作业 -->
+    <select id="selectByPage" resultMap="HomeworkResultMap">
+        select * from `homework`
+        <where>
+            <if test="homework.title != null and homework.title != ''">
+                and title like concat('%', #{homework.title}, '%')
+            </if>
+            <if test="homework.courseId != null">
+                and course_id = #{homework.courseId}
+            </if>
+            <if test="homework.status != null and homework.status != ''">
+                and status = #{homework.status}
+            </if>
+        </where>
+        order by deadline asc
+        limit #{offset}, #{pageSize}
+    </select>
+
+    <!-- 根据状态批量更新作业 -->
+    <update id="batchUpdateStatus">
+        update `homework`
+        set status = #{status},
+        update_time = now()
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+</mapper>

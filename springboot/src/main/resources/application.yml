@@ -1,0 +1,137 @@
+# 服务器配置
+server:
+  port: 9090
+  
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+    context-path: /
+
+# 数据库配置
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/code2026?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
+  
+  # 定时任务配置
+  task:
+    scheduling:
+      enabled: true
+      pool:
+        size: 5
+      thread-name-prefix: risk-scheduler-
+  
+  # JPA/Hibernate配置（如果有）
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+# MyBatis配置
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.example.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+
+# 健康检查配置（新增）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET,POST
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+
+# 日志配置（新增）
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    com.example.scheduler: INFO
+    com.example.controller: INFO
+    com.example.mapper: DEBUG
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+    org.springframework.transaction: DEBUG
+  file:
+    name: logs/edu-risk-system.log
+  logback:
+    rollingpolicy:
+      max-file-size: 50MB
+      max-history: 60
+      total-size-cap: 3GB
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 自定义文件配置
+fileBaseUrl: http://localhost
+
+# 应用自定义配置（新增）
+app:
+  # 定时任务配置
+  scheduler:
+    enabled: true
+    risk-scan-cron: "0 0/30 * * * ?"      # 每30分钟
+    feature-calc-cron: "0 0 2 * * ?"      # 每天凌晨2点
+    cleanup-cron: "0 0 3 ? * SUN"         # 每周日凌晨3点
+    metrics-retention-days: 30
+  
+  # 健康检查配置
+  health-check:
+    enabled: true
+    database-timeout-ms: 5000
+    max-response-time-ms: 3000
+  
+  # 系统监控
+  monitoring:
+    enable-metrics: true
+    enable-tracing: false
+    slow-query-threshold-ms: 1000
+  
+  # 风险预警阈值
+  risk:
+    high-threshold: 90
+    medium-threshold: 70
+    low-threshold: 30
+    check-interval-hours: 1
+
+# PageHelper分页插件配置
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+  page-size-zero: true
+
+# Hutool工具配置
+hutool:
+  http:
+    timeout: 5000
+  setting:
+    auto-load: true
+
+# 缓存配置（简单示例）
+cache:
+  type: simple
+  risk-alerts:
+    ttl-seconds: 300
+  learning-features:
+    ttl-seconds: 600

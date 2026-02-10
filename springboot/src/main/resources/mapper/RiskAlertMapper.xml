@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.RiskAlertMapper">
+
+
+<resultMap id="BaseResultMap" type="com.example.entity.RiskAlert">
+        <id column="id" property="id" />
+        <result column="alert_no" property="alertNo" />
+        <result column="student_id" property="studentId" />
+        <result column="student_name" property="studentName" />
+        <result column="student_no" property="studentNo" />
+        <result column="course_id" property="courseId" />
+        <result column="course_name" property="courseName" />
+
+        <result column="alert_type" property="alertType" />
+        <result column="alert_level" property="alertLevel" />
+        <result column="alert_title" property="alertTitle" />
+        <result column="alert_content" property="alertContent" />
+
+        <result column="risk_score" property="riskScore" />
+        <result column="risk_probability" property="riskProbability" />
+
+        <result column="feature_data" property="featureData" />
+        <result column="suggestion" property="suggestion" />
+
+        <result column="status" property="status" />
+        <result column="handler_id" property="handlerId" />
+        <result column="handler_name" property="handlerName" />
+        <result column="handler_role" property="handlerRole" />
+
+        <result column="detected_time" property="detectedTime" />
+        <result column="alert_time" property="alertTime" />
+        <result column="read_time" property="readTime" />
+        <result column="process_time" property="processTime" />
+        <result column="resolve_time" property="resolveTime" />
+        <result column="close_time" property="closeTime" />
+
+        <result column="process_method" property="processMethod" />
+        <result column="process_result" property="processResult" />
+        <result column="feedback" property="feedback" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, alert_no, student_id, student_name, student_no, course_id, course_name,
+        alert_type, alert_level, alert_title, alert_content,
+        risk_score, risk_probability, feature_data, suggestion,
+        status, handler_id, handler_name, handler_role,
+        detected_time, alert_time, read_time, process_time, resolve_time, close_time,
+        process_method, process_result, feedback
+    </sql>
+
+    <insert id="insert" parameterType="com.example.entity.RiskAlert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO risk_alerts (
+            alert_no, student_id, student_name, student_no, course_id, course_name,
+            alert_type, alert_level, alert_title, alert_content,
+            risk_score, risk_probability, feature_data, suggestion,
+            status, handler_id, handler_name, handler_role,
+            detected_time, alert_time, read_time, process_time, resolve_time, close_time,
+            process_method, process_result, feedback
+        ) VALUES (
+                     #{alertNo}, #{studentId}, #{studentName}, #{studentNo}, #{courseId}, #{courseName},
+                     #{alertType}, #{alertLevel}, #{alertTitle}, #{alertContent},
+                     #{riskScore}, #{riskProbability}, #{featureData}, #{suggestion},
+                     #{status}, #{handlerId}, #{handlerName}, #{handlerRole},
+                     #{detectedTime}, #{alertTime}, #{readTime}, #{processTime}, #{resolveTime}, #{closeTime},
+                     #{processMethod}, #{processResult}, #{feedback}
+                 )
+    </insert>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM risk_alerts WHERE id = #{id}
+    </delete>
+
+    <update id="updateById" parameterType="com.example.entity.RiskAlert">
+        UPDATE risk_alerts
+        <set>
+            <if test="studentId != null">student_id = #{studentId},</if>
+            <if test="studentName != null">student_name = #{studentName},</if>
+            <if test="studentNo != null">student_no = #{studentNo},</if>
+            <if test="courseId != null">course_id = #{courseId},</if>
+            <if test="courseName != null">course_name = #{courseName},</if>
+
+            <if test="alertType != null">alert_type = #{alertType},</if>
+            <if test="alertLevel != null">alert_level = #{alertLevel},</if>
+            <if test="alertTitle != null">alert_title = #{alertTitle},</if>
+            <if test="alertContent != null">alert_content = #{alertContent},</if>
+
+            <if test="riskScore != null">risk_score = #{riskScore},</if>
+            <if test="riskProbability != null">risk_probability = #{riskProbability},</if>
+            <if test="featureData != null">feature_data = #{featureData},</if>
+            <if test="suggestion != null">suggestion = #{suggestion},</if>
+
+            <if test="status != null">status = #{status},</if>
+            <if test="handlerId != null">handler_id = #{handlerId},</if>
+            <if test="handlerName != null">handler_name = #{handlerName},</if>
+            <if test="handlerRole != null">handler_role = #{handlerRole},</if>
+
+            <if test="readTime != null">read_time = #{readTime},</if>
+            <if test="processTime != null">process_time = #{processTime},</if>
+            <if test="resolveTime != null">resolve_time = #{resolveTime},</if>
+            <if test="closeTime != null">close_time = #{closeTime},</if>
+
+            <if test="processMethod != null">process_method = #{processMethod},</if>
+            <if test="processResult != null">process_result = #{processResult},</if>
+            <if test="feedback != null">feedback = #{feedback}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByAlertNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE alert_no = #{alertNo}
+    </select>
+
+    <select id="selectAll" parameterType="com.example.entity.RiskAlert" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        <where>
+            <if test="studentId != null">AND student_id = #{studentId}</if>
+            <if test="studentName != null and studentName != ''">AND student_name LIKE CONCAT('%', #{studentName}, '%')</if>
+            <if test="courseId != null">AND course_id = #{courseId}</if>
+            <if test="courseName != null and courseName != ''">AND course_name LIKE CONCAT('%', #{courseName}, '%')</if>
+            <if test="alertLevel != null and alertLevel != ''">AND alert_level = #{alertLevel}</if>
+            <if test="alertType != null and alertType != ''">AND alert_type = #{alertType}</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="handlerId != null">AND handler_id = #{handlerId}</if>
+            <if test="handlerRole != null and handlerRole != ''">AND handler_role = #{handlerRole}</if>
+        </where>
+        ORDER BY detected_time DESC
+    </select>
+
+    <select id="selectByStudentId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE student_id = #{studentId}
+        ORDER BY detected_time DESC
+    </select>
+
+    <select id="selectByCourseId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE course_id = #{courseId}
+        ORDER BY detected_time DESC
+    </select>
+
+    <select id="selectByAlertLevel" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE alert_level = #{alertLevel}
+        ORDER BY detected_time DESC
+    </select>
+
+    <select id="selectByStatus" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE status = #{status}
+        ORDER BY detected_time DESC
+    </select>
+
+    <select id="countUnread" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM risk_alerts
+        WHERE status = 'UNREAD'
+        <if test="handlerId != null">AND handler_id = #{handlerId}</if>
+        <if test="handlerRole != null and handlerRole != ''">AND handler_role = #{handlerRole}</if>
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM risk_alerts
+        <where>
+            <if test="courseId != null">AND course_id = #{courseId}</if>
+            <if test="alertLevel != null and alertLevel != ''">AND alert_level = #{alertLevel}</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="startDate != null and startDate != ''">AND detected_time >= #{startDate}</if>
+            <if test="endDate != null and endDate != ''">AND detected_time &lt;= #{endDate}</if>
+        </where>
+    </select>
+
+    <update id="updateStatus">
+        UPDATE risk_alerts
+        SET status = #{status}
+        <if test="status == 'READ' and handlerId != null">
+            , read_time = NOW()
+        </if>
+        <if test="status == 'PROCESSING' and handlerId != null">
+            , process_time = NOW()
+        </if>
+        <if test="status == 'RESOLVED' and handlerId != null">
+            , resolve_time = NOW()
+        </if>
+        <if test="status == 'CLOSED' and handlerId != null">
+            , close_time = NOW()
+        </if>
+        <if test="handlerId != null">
+            , handler_id = #{handlerId}
+        </if>
+        <if test="handlerName != null">
+            , handler_name = #{handlerName}
+        </if>
+        <if test="handlerRole != null">
+            , handler_role = #{handlerRole}
+        </if>
+        WHERE id = #{id}
+    </update>
+
+    <update id="batchUpdateStatus">
+        UPDATE risk_alerts
+        SET status = #{status}
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="selectLatestAlerts" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        ORDER BY detected_time DESC
+        <if test="limit != null">LIMIT #{limit}</if>
+    </select>
+
+    <select id="search" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE student_name LIKE CONCAT('%', #{keyword}, '%')
+        OR student_no LIKE CONCAT('%', #{keyword}, '%')
+        OR course_name LIKE CONCAT('%', #{keyword}, '%')
+        OR alert_title LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY detected_time DESC
+    </select>
+
+    <select id="selectDailyStatistics" resultType="java.util.HashMap">
+        SELECT
+            DATE(detected_time) as alert_date,
+            alert_level,
+            COUNT(*) as alert_count,
+            SUM(CASE WHEN status = 'UNREAD' THEN 1 ELSE 0 END) as unread_count
+        FROM risk_alerts
+        WHERE detected_time >= DATE_SUB(NOW(), INTERVAL #{days} DAY)
+        GROUP BY DATE(detected_time), alert_level
+        ORDER BY alert_date DESC
+    </select>
+
+    <select id="selectByHandler" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM risk_alerts
+        WHERE handler_id = #{handlerId}
+        AND handler_role = #{handlerRole}
+        ORDER BY detected_time DESC
+    </select>
+
+</mapper>

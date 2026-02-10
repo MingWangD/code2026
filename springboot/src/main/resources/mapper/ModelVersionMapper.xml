@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.ModelVersionMapper">
+
+    <resultMap id="BaseResultMap" type="com.example.entity.ModelVersion">
+        <id column="id" property="id" />
+        <result column="model_no" property="modelNo" />
+        <result column="version" property="version" />
+
+        <result column="model_name" property="modelName" />
+        <result column="description" property="description" />
+        <result column="algorithm_type" property="algorithmType" />
+
+        <result column="training_data_start" property="trainingDataStart" />
+        <result column="training_data_end" property="trainingDataEnd" />
+        <result column="sample_count" property="sampleCount" />
+        <result column="feature_count" property="featureCount" />
+
+        <result column="parameters" property="parameters" />
+        <result column="weights" property="weights" />
+        <result column="bias" property="bias" />
+
+        <result column="accuracy" property="accuracy" />
+        <result column="precision" property="precision" />
+        <result column="recall" property="recall" />
+        <result column="f1_score" property="f1Score" />
+        <result column="auc" property="auc" />
+
+        <result column="low_threshold" property="lowThreshold" />
+        <result column="medium_threshold" property="mediumThreshold" />
+        <result column="high_threshold" property="highThreshold" />
+
+        <result column="is_active" property="isActive" />
+        <result column="status" property="status" />
+
+        <result column="model_file_path" property="modelFilePath" />
+        <result column="feature_scaler_path" property="featureScalerPath" />
+
+        <result column="training_start_time" property="trainingStartTime" />
+        <result column="training_end_time" property="trainingEndTime" />
+        <result column="deployed_time" property="deployedTime" />
+        <result column="created_time" property="createdTime" />
+        <result column="updated_time" property="updatedTime" />
+
+        <result column="created_by" property="createdBy" />
+        <result column="updated_by" property="updatedBy" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, model_no, version, model_name, description, algorithm_type,
+        training_data_start, training_data_end, sample_count, feature_count,
+        parameters, weights, bias, accuracy, `precision`, recall, f1_score, auc,
+        low_threshold, medium_threshold, high_threshold, is_active, status,
+        model_file_path, feature_scaler_path, training_start_time, training_end_time,
+        deployed_time, created_time, updated_time, created_by, updated_by
+    </sql>
+
+    <insert id="insert" parameterType="com.example.entity.ModelVersion" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO model_versions (
+            model_no, version, model_name, description, algorithm_type,
+            training_data_start, training_data_end, sample_count, feature_count,
+            parameters, weights, bias, accuracy, `precision`, recall, f1_score, auc,
+            low_threshold, medium_threshold, high_threshold, is_active, status,
+            model_file_path, feature_scaler_path, training_start_time, training_end_time,
+            deployed_time, created_time, updated_time, created_by, updated_by
+        ) VALUES (
+                     #{modelNo}, #{version}, #{modelName}, #{description}, #{algorithmType},
+                     #{trainingDataStart}, #{trainingDataEnd}, #{sampleCount}, #{featureCount},
+                     #{parameters}, #{weights}, #{bias}, #{accuracy}, #{precision}, #{recall}, #{f1Score}, #{auc},
+                     #{lowThreshold}, #{mediumThreshold}, #{highThreshold}, #{isActive}, #{status},
+                     #{modelFilePath}, #{featureScalerPath}, #{trainingStartTime}, #{trainingEndTime},
+                     #{deployedTime}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}
+                 )
+    </insert>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM model_versions WHERE id = #{id}
+    </delete>
+
+    <update id="updateById" parameterType="com.example.entity.ModelVersion">
+        UPDATE model_versions
+        <set>
+            <if test="modelNo != null">model_no = #{modelNo},</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="modelName != null">model_name = #{modelName},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="algorithmType != null">algorithm_type = #{algorithmType},</if>
+
+            <if test="trainingDataStart != null">training_data_start = #{trainingDataStart},</if>
+            <if test="trainingDataEnd != null">training_data_end = #{trainingDataEnd},</if>
+            <if test="sampleCount != null">sample_count = #{sampleCount},</if>
+            <if test="featureCount != null">feature_count = #{featureCount},</if>
+
+            <if test="parameters != null">parameters = #{parameters},</if>
+            <if test="weights != null">weights = #{weights},</if>
+            <if test="bias != null">bias = #{bias},</if>
+
+            <if test="accuracy != null">accuracy = #{accuracy},</if>
+            <if test="precision != null">`precision` = #{precision},</if>
+            <if test="recall != null">recall = #{recall},</if>
+            <if test="f1Score != null">f1_score = #{f1Score},</if>
+            <if test="auc != null">auc = #{auc},</if>
+
+            <if test="lowThreshold != null">low_threshold = #{lowThreshold},</if>
+            <if test="mediumThreshold != null">medium_threshold = #{mediumThreshold},</if>
+            <if test="highThreshold != null">high_threshold = #{highThreshold},</if>
+
+            <if test="isActive != null">is_active = #{isActive},</if>
+            <if test="status != null">status = #{status},</if>
+
+            <if test="modelFilePath != null">model_file_path = #{modelFilePath},</if>
+            <if test="featureScalerPath != null">feature_scaler_path = #{featureScalerPath},</if>
+
+            <if test="trainingStartTime != null">training_start_time = #{trainingStartTime},</if>
+            <if test="trainingEndTime != null">training_end_time = #{trainingEndTime},</if>
+            <if test="deployedTime != null">deployed_time = #{deployedTime},</if>
+            <if test="updatedTime != null">updated_time = #{updatedTime},</if>
+            <if test="updatedBy != null">updated_by = #{updatedBy}</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM model_versions
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByModelNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM model_versions
+        WHERE model_no = #{modelNo}
+        ORDER BY created_time DESC
+    </select>
+
+    <select id="selectActiveModel" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM model_versions
+        WHERE is_active = 1
+        ORDER BY deployed_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectLatestVersion" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM model_versions
+        WHERE model_no = #{modelNo}
+        ORDER BY created_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectAll" parameterType="com.example.entity.ModelVersion" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM model_versions
+        <where>
+            <if test="modelNo != null and modelNo != ''">AND model_no LIKE CONCAT('%', #{modelNo}, '%')</if>
+            <if test="modelName != null and modelName != ''">AND model_name LIKE CONCAT('%', #{modelName}, '%')</if>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="isActive != null">AND is_active = #{isActive}</if>
+        </where>
+        ORDER BY created_time DESC
+    </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM model_versions
+        <where>
+            <if test="status != null and status != ''">AND status = #{status}</if>
+            <if test="isActive != null">AND is_active = #{isActive}</if>
+        </where>
+    </select>
+
+    <update id="updateActiveStatus">
+        UPDATE model_versions
+        SET is_active = #{isActive},
+            updated_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="deactivateAllModels">
+        UPDATE model_versions
+        SET is_active = 0,
+            updated_time = NOW()
+        WHERE is_active = 1
+    </update>
+
+    <update id="updatePerformanceMetrics">
+        UPDATE model_versions
+        SET accuracy = #{accuracy},
+            `precision` = #{precision},
+            recall = #{recall},
+            f1_score = #{f1Score},
+            auc = #{auc},
+            updated_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateModelFilePath">
+        UPDATE model_versions
+        SET model_file_path = #{modelFilePath},
+            feature_scaler_path = #{featureScalerPath},
+            updated_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectTrainingHistory" resultMap="BaseResultMap">
+        SELECT <include refid="Base_Column_List" />
+        FROM model_versions
+        ORDER BY created_time DESC
+        <if test="limit != null">LIMIT #{limit}</if>
+    </select>
+
+</mapper>

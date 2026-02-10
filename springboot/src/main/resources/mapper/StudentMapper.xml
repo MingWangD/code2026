@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.StudentMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="StudentResultMap" type="com.example.entity.Student">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="role" column="role"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="classId" column="class_id"/>
+        <result property="className" column="class_name"/>
+        <result property="grade" column="grade"/>
+        <result property="major" column="major"/>
+        <result property="enrollmentYear" column="enrollment_year"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="academicStatus" column="academic_status"/>
+        <result property="warningCount" column="warning_count"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <!-- 查询所有学生 -->
+    <select id="selectAll" resultMap="StudentResultMap">
+        select * from `student`
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="studentNo != null and studentNo != ''">
+                and student_no like concat('%', #{studentNo}, '%')
+            </if>
+            <if test="grade != null and grade != ''">
+                and grade = #{grade}
+            </if>
+            <if test="major != null and major != ''">
+                and major like concat('%', #{major}, '%')
+            </if>
+            <if test="classId != null">
+                and class_id = #{classId}
+            </if>
+            <if test="academicStatus != null and academicStatus != ''">
+                and academic_status = #{academicStatus}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="enrollmentYear != null">
+                and enrollment_year = #{enrollmentYear}
+            </if>
+        </where>
+        order by student_no asc
+    </select>
+
+
+
+    <!-- 根据ID查询学生 -->
+    <select id="selectById" resultMap="StudentResultMap">
+        select * from `student` where id = #{id}
+    </select>
+
+    <!-- 根据学号查询学生 -->
+    <select id="selectByStudentNo" resultMap="StudentResultMap">
+        select * from `student` where student_no = #{studentNo}
+    </select>
+
+    <!-- 根据用户名查询学生 -->
+    <select id="selectByUsername" resultMap="StudentResultMap">
+        select * from `student` where username = #{username}
+    </select>
+
+    <!-- 根据班级ID查询学生 -->
+    <select id="selectByClassId" resultMap="StudentResultMap">
+        select * from `student` where class_id = #{classId}
+        order by student_no asc
+    </select>
+
+    <!-- 根据条件查询（用于登录验证） -->
+    <select id="selectByCondition" resultMap="StudentResultMap">
+        select * from `student`
+        <where>
+            <if test="username != null">and username = #{username}</if>
+            <if test="password != null">and password = #{password}</if>
+            <if test="status != null">and status = #{status}</if>
+        </where>
+        limit 1
+    </select>
+
+    <!-- 删除学生 -->
+    <delete id="deleteById">
+        delete from `student` where id = #{id}
+    </delete>
+
+    <!-- 新增学生 -->
+    <insert id="insert" parameterType="com.example.entity.Student" useGeneratedKeys="true" keyProperty="id">
+        insert into `student` (
+            username, password, name, avatar, role,
+            student_no, class_id, class_name, grade, major,
+            enrollment_year, phone, email, academic_status, warning_count,
+            create_time, update_time, status
+        ) values (
+                     #{username}, #{password}, #{name}, #{avatar}, #{role},
+                     #{studentNo}, #{classId}, #{className}, #{grade}, #{major},
+                     #{enrollmentYear}, #{phone}, #{email}, #{academicStatus}, #{warningCount},
+                     #{createTime}, #{updateTime}, #{status}
+                 )
+    </insert>
+
+    <!-- 修改学生 -->
+    <update id="updateById" parameterType="com.example.entity.Student">
+        update `student`
+        <set>
+            <if test="username != null">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="studentNo != null">student_no = #{studentNo},</if>
+            <if test="classId != null">class_id = #{classId},</if>
+            <if test="className != null">class_name = #{className},</if>
+            <if test="grade != null">grade = #{grade},</if>
+            <if test="major != null">major = #{major},</if>
+            <if test="enrollmentYear != null">enrollment_year = #{enrollmentYear},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="academicStatus != null">academic_status = #{academicStatus},</if>
+            <if test="warningCount != null">warning_count = #{warningCount},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = #{updateTime}
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 统计学生数量 -->
+    <select id="count" resultType="java.lang.Integer">
+        select count(*) from `student`
+        <where>
+            <if test="grade != null and grade != ''">
+                and grade = #{grade}
+            </if>
+            <if test="major != null and major != ''">
+                and major = #{major}
+            </if>
+            <if test="academicStatus != null and academicStatus != ''">
+                and academic_status = #{academicStatus}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 批量插入学生 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        insert into `student` (
+        username, password, name, role,
+        student_no, class_id, class_name, grade, major,
+        enrollment_year, academic_status, warning_count,
+        create_time, update_time, status
+        ) values
+        <foreach collection="list" item="student" separator=",">
+            (
+            #{student.username}, #{student.password}, #{student.name}, 'STUDENT',
+            #{student.studentNo}, #{student.classId}, #{student.className}, #{student.grade}, #{student.major},
+            #{student.enrollmentYear}, '正常', 0,
+            #{student.createTime}, #{student.updateTime}, '正常'
+            )
+        </foreach>
+    </insert>
+
+    <!-- 更新学业状态 -->
+    <update id="updateAcademicStatus">
+        update `student`
+        set academic_status = #{academicStatus},
+            warning_count = #{warningCount},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 分页查询学生 -->
+    <select id="selectByPage" resultMap="StudentResultMap">
+        select * from `student`
+        <where>
+            <if test="student.name != null and student.name != ''">
+                and name like concat('%', #{student.name}, '%')
+            </if>
+            <if test="student.studentNo != null and student.studentNo != ''">
+                and student_no like concat('%', #{student.studentNo}, '%')
+            </if>
+            <if test="student.grade != null and student.grade != ''">
+                and grade = #{student.grade}
+            </if>
+            <if test="student.major != null and student.major != ''">
+                and major like concat('%', #{student.major}, '%')
+            </if>
+            <if test="student.classId != null">
+                and class_id = #{student.classId}
+            </if>
+            <if test="student.academicStatus != null and student.academicStatus != ''">
+                and academic_status = #{student.academicStatus}
+            </if>
+        </where>
+        order by student_no asc
+        limit #{offset}, #{pageSize}
+    </select>
+
+</mapper>
