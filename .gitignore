@@ -1,16 +1,27 @@
+﻿# ===== OS =====
+.DS_Store
+Thumbs.db
 
-# Dependencies
-node_modules/
-.vite/
-# Build outputs
-dist/
-# Environment variables
-.env
-.env.local
-.env.*.local
-# Logs
+# ===== IntelliJ IDEA =====
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# ===== Java / Maven =====
+**/target/
+*.class
 *.log
-# ignore large video files
-/springboot/src/main/resources/static/videos/
-*.mp4
 
+# ===== Node / Vite =====
+**/node_modules/
+**/dist/
+**/.vite/
+
+# ===== Env / local config =====
+.env
+.env.*
+
+# ===== Large media =====
+*.mp4
