@@ -561,7 +561,7 @@ export default {
     const testBackendAPI = async () => {
       console.log('🔍 开始测试后端接口...')
 
-      const baseURL = 'http://localhost:9090' // 注意：现在是9090端口！
+      const baseURL = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "")
       const endpoints = [
         '/api/dashboard/warning-trend?days=7',
         '/api/dashboard/overview',

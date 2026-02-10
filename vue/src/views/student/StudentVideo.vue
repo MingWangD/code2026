@@ -31,13 +31,13 @@
 <script setup>
 import { onBeforeUnmount, ref } from "vue";
 
-const BASE_URL = "http://localhost:9090";
+const API_BASE = (import.meta.env.VITE_BASE_URL || "").replace(/\/$/, "");
 const USER_KEY = "system-user";
 const HEARTBEAT_INTERVAL = 10_000;
 
 // 这里先用演示值：后续我们再接课程列表/课程详情动态加载
 const courseId = ref(1);
-const videoUrl = ref("http://localhost:9090/videos/demo.mp4");
+const videoUrl = ref(`${API_BASE}/videos/demo.mp4`);
 
 let studentId = null;
 let studentName = "";
@@ -67,7 +67,7 @@ async function sendProgress() {
   };
 
   try {
-    await fetch(`${BASE_URL}/behavior/event/videoProgress`, {
+    await fetch(`${API_BASE}/behavior/event/videoProgress`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
