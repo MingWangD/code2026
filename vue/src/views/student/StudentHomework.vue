@@ -2,41 +2,30 @@
   <div class="card">
     <h3>提交作业</h3>
 
-    <div v-if="!studentId" class="warn">
-      未检测到登录学生信息，请重新登录
-    </div>
+    <div v-if="!studentId" class="warn">未检测到登录学生，请先登录。</div>
 
     <div v-else>
       <div class="bar">
-        <div>
-          学生：<strong>{{ studentName }}</strong>（ID: {{ studentId }}）
-        </div>
+        <div>学生：<strong>{{ studentName || '未知' }}</strong>（ID: {{ studentId }}）</div>
         <div class="meta">课程ID：{{ courseId }}</div>
       </div>
 
-      <button class="btn" @click="loadHomework">
-        加载作业列表
+      <button class="btn" @click="loadHomework" :disabled="loading || !courseId">
+        {{ loading ? '加载中...' : '加载作业' }}
       </button>
 
-      <div v-if="loading" class="tip">正在加载作业...</div>
+      <div v-if="!courseId" class="tip">请先在上方选择课程。</div>
+      <div v-else-if="homeworks.length === 0 && !loading" class="tip">该课程暂无作业。</div>
 
-      <div v-if="homeworks.length === 0 && !loading" class="tip">
-        当前课程暂无作业
-      </div>
-
-      <div
-          v-for="hw in homeworks"
-          :key="hw.id"
-          class="homework"
-      >
+      <div class="homework" v-for="hw in homeworks" :key="hw.id">
         <div class="left">
-          <div class="title">{{ hw.title || "未命名作业" }}</div>
-          <div class="desc">{{ hw.description || "暂无描述" }}</div>
+          <div class="title">{{ hw.title || hw.homeworkTitle || `作业 #${hw.id}` }}</div>
+          <div class="desc">{{ hw.description || hw.content || '暂无说明' }}</div>
         </div>
-
         <div class="right">
           <button
               class="btn submit"
+              :disabled="!studentId || !courseId"
               @click="submitHomework(hw.id)"
           >
             提交作业
@@ -48,36 +37,34 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
-const BASE_URL = "http://localhost:9090";
+const props = defineProps({
+  courseId: { type: Number, default: null },
+  studentId: { type: Number, default: null },
+  studentName: { type: String, default: "" },
+  apiBase: { type: String, default: "" }
+});
+
 const USER_KEY = "system-user";
+const localUser = JSON.parse(localStorage.getItem(USER_KEY) || "{}");
 
-// 演示用：课程 ID
-// 后续你可以从“课程列表 → 点击课程”带进来
-const courseId = ref(1);
-
-let studentId = null;
-let studentName = "";
-
-try {
-  const u = JSON.parse(localStorage.getItem(USER_KEY) || "{}");
-  studentId = u?.id ?? null;
-  studentName = u?.name ?? "";
-} catch {
-  studentId = null;
-}
-
-const homeworks = ref([]);
+const studentId = props.studentId ?? localUser?.id ?? null;
+const studentName = props.studentName || localUser?.name || "";
 const loading = ref(false);
+const homeworks = ref([]);
+
+const getBase = () => (props.apiBase || (import.meta.env.VITE_BASE_URL || "")).replace(/\/$/, "");
 
 // 加载作业列表
 async function loadHomework() {
+  if (!props.courseId) {
+    homeworks.value = [];
+    return;
+  }
   loading.value = true;
   try {
-    const res = await fetch(
-        `${BASE_URL}/homework/selectByCourse/${courseId.value}`
-    );
+    const res = await fetch(`${getBase()}/homework/selectByCourse/${props.courseId}`);
     const json = await res.json();
     homeworks.value = json?.data || [];
   } catch (e) {
@@ -89,12 +76,12 @@ async function loadHomework() {
 
 // 提交作业
 async function submitHomework(homeworkId) {
-  if (!studentId) return;
+  if (!studentId || !props.courseId) return;
 
   try {
     // 1) 先查已提交次数
     const countRes = await fetch(
-        `${BASE_URL}/behavior/event/homeworkSubmitCount?studentId=${studentId}&courseId=${courseId.value}&homeworkId=${homeworkId}`
+        `${getBase()}/behavior/event/homeworkSubmitCount?studentId=${studentId}&courseId=${props.courseId}&homeworkId=${homeworkId}`
     );
     const countJson = await countRes.json();
     const submittedCount = Number(countJson?.data || 0);
@@ -102,7 +89,7 @@ async function submitHomework(homeworkId) {
     // 2) 本次 attemptNo = 已提交次数 + 1
     const payload = {
       studentId: studentId,
-      courseId: courseId.value,
+      courseId: props.courseId,
       homeworkId: homeworkId,
       score: null,
       submitTime: null,
@@ -110,7 +97,7 @@ async function submitHomework(homeworkId) {
     };
 
     // 3) 提交作业
-    const res = await fetch(`${BASE_URL}/homework/submit`, {
+    const res = await fetch(`${getBase()}/homework/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -127,6 +114,10 @@ async function submitHomework(homeworkId) {
     alert("提交失败，请查看控制台");
   }
 }
+
+watch(() => props.courseId, () => {
+  loadHomework();
+}, { immediate: true });
 </script>
 
 <style scoped>
