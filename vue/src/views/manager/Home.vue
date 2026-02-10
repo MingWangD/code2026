@@ -209,6 +209,26 @@ const data = reactive({
   refreshSec: 3,
 });
 
+const okCode = (code) => code === "200" || code === 200;
+
+const pickDefaultStudent = () => {
+  if (!data.students || data.students.length === 0) {
+    data.studentId = null;
+    return;
+  }
+  const exists = data.students.some((s) => Number(s.id) === Number(data.studentId));
+  if (!exists) data.studentId = data.students[0].id;
+};
+
+const pickDefaultCourse = () => {
+  if (!data.courses || data.courses.length === 0) {
+    data.courseId = null;
+    return;
+  }
+  const exists = data.courses.some((c) => Number(c.id) === Number(data.courseId));
+  if (!exists) data.courseId = data.courses[0].id;
+};
+
 const studentLabel = (s) => {
   const name = s.name || s.studentName || "";
   const no = s.studentNo ? `（${s.studentNo}）` : "";
@@ -228,9 +248,13 @@ const loadStudents = async () => {
   data.loadingStudents = true;
   try {
     const res = await request.get("/student/selectAll");
-    if (res.code === "200" || res.code === 200) data.students = res.data || [];
-    else ElMessage.error(res.msg || "加载学生列表失败");
+    if (okCode(res.code)) {
+      data.students = res.data || [];
+      pickDefaultStudent();
+    } else ElMessage.error(res.msg || "加载学生列表失败");
   } catch (e) {
+    data.students = [];
+    data.studentId = null;
     ElMessage.error("加载学生列表失败：请检查后端是否启动/跨域/接口路径");
   } finally {
     data.loadingStudents = false;
@@ -241,9 +265,13 @@ const loadCourses = async () => {
   data.loadingCourses = true;
   try {
     const res = await request.get("/course/selectAll");
-    if (res.code === "200" || res.code === 200) data.courses = res.data || [];
-    else ElMessage.error(res.msg || "加载课程列表失败");
+    if (okCode(res.code)) {
+      data.courses = res.data || [];
+      pickDefaultCourse();
+    } else ElMessage.error(res.msg || "加载课程列表失败");
   } catch (e) {
+    data.courses = [];
+    data.courseId = null;
     ElMessage.error("加载课程列表失败：请检查后端是否启动/跨域/接口路径");
   } finally {
     data.loadingCourses = false;
@@ -268,13 +296,15 @@ const loadEvents = async () => {
       params: { studentId: data.studentId, courseId: data.courseId },
     });
 
-    if (res.code === "200" || res.code === 200) {
+    if (okCode(res.code)) {
       data.list = res.data || [];
       data.lastUpdate = new Date().toLocaleString();
     } else {
+      data.list = [];
       ElMessage.error(res.msg || "查询失败");
     }
   } catch (e) {
+    data.list = [];
     ElMessage.error("请求失败，请检查后端是否启动/跨域配置");
   } finally {
     data.loading = false;
@@ -291,12 +321,14 @@ const loadInsights = async () => {
       params: { studentId: data.studentId, courseId: data.courseId },
     });
 
-    if (res.code === "200" || res.code === 200) {
+    if (okCode(res.code)) {
       data.insights = res.data || null;
     } else {
+      data.insights = null;
       ElMessage.error(res.msg || "加载判读失败");
     }
   } catch (e) {
+    data.insights = null;
     ElMessage.error("加载判读失败：请检查 /teacher/behavior/insights 是否可用");
   } finally {
     data.loadingInsights = false;
@@ -347,6 +379,9 @@ watch(
 
 onMounted(async () => {
   await reloadBaseData();
+  if (data.studentId && data.courseId) {
+    await loadAll();
+  }
 });
 
 onBeforeUnmount(() => stopTimer());
