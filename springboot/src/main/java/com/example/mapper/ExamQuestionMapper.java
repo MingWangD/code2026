@@ -13,7 +13,7 @@ public interface ExamQuestionMapper {
         SELECT
             eq.exam_id,
             q.id            AS question_id,
-            q.content,
+            q.stem          AS content,
             q.option_a,
             q.option_b,
             q.option_c,

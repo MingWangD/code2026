@@ -2,17 +2,19 @@
   <div class="card">
     <h3>提交作业</h3>
 
-    <div v-if="!studentId" class="warn">未检测到登录学生，请先登录。</div>
+    <div v-if="!resolvedStudentId" class="warn">未检测到登录学生，请先登录。</div>
 
     <div v-else>
       <div class="bar">
-        <div>学生：<strong>{{ studentName || '未知' }}</strong>（ID: {{ studentId }}）</div>
+        <div>学生：<strong>{{ resolvedStudentName || '未知' }}</strong>（ID: {{ resolvedStudentId }}）</div>
         <div class="meta">课程ID：{{ courseId }}</div>
       </div>
 
       <button class="btn" @click="loadHomework" :disabled="loading || !courseId">
         {{ loading ? '加载中...' : '加载作业' }}
       </button>
+
+      <div v-if="message" class="tip success">{{ message }}</div>
 
       <div v-if="!courseId" class="tip">请先在上方选择课程。</div>
       <div v-else-if="homeworks.length === 0 && !loading" class="tip">该课程暂无作业。</div>
@@ -21,14 +23,15 @@
         <div class="left">
           <div class="title">{{ hw.title || hw.homeworkTitle || `作业 #${hw.id}` }}</div>
           <div class="desc">{{ hw.description || hw.content || '暂无说明' }}</div>
+          <div class="meta">已提交 {{ submitCountMap[hw.id] || 0 }} 次</div>
         </div>
         <div class="right">
           <button
               class="btn submit"
-              :disabled="!studentId || !courseId"
+              :disabled="!resolvedStudentId || !courseId || submitLoadingMap[hw.id]"
               @click="submitHomework(hw.id)"
           >
-            提交作业
+            {{ submitLoadingMap[hw.id] ? '提交中...' : '提交作业' }}
           </button>
         </div>
       </div>
@@ -37,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 const props = defineProps({
   courseId: { type: Number, default: null },
@@ -49,10 +52,13 @@ const props = defineProps({
 const USER_KEY = "system-user";
 const localUser = JSON.parse(localStorage.getItem(USER_KEY) || "{}");
 
-const studentId = props.studentId ?? localUser?.id ?? null;
-const studentName = props.studentName || localUser?.name || "";
+const resolvedStudentId = computed(() => props.studentId ?? localUser?.id ?? null);
+const resolvedStudentName = computed(() => props.studentName || localUser?.name || "");
 const loading = ref(false);
 const homeworks = ref([]);
+const message = ref("");
+const submitCountMap = ref({});
+const submitLoadingMap = ref({});
 
 const getBase = () => (props.apiBase || (import.meta.env.VITE_BASE_URL || "")).replace(/\/$/, "");
 
@@ -60,6 +66,8 @@ const getBase = () => (props.apiBase || (import.meta.env.VITE_BASE_URL || "")).r
 async function loadHomework() {
   if (!props.courseId) {
     homeworks.value = [];
+    submitCountMap.value = {};
+    message.value = "";
     return;
   }
   loading.value = true;
@@ -67,6 +75,7 @@ async function loadHomework() {
     const res = await fetch(`${getBase()}/homework/selectByCourse/${props.courseId}`);
     const json = await res.json();
     homeworks.value = json?.data || [];
+    await loadSubmitCounts();
   } catch (e) {
     console.error("加载作业失败", e);
   } finally {
@@ -74,21 +83,42 @@ async function loadHomework() {
   }
 }
 
+async function loadSubmitCounts() {
+  if (!resolvedStudentId.value || !props.courseId || homeworks.value.length === 0) {
+    submitCountMap.value = {};
+    return;
+  }
+
+  const entries = await Promise.all(
+    homeworks.value.map(async (hw) => {
+      try {
+        const countRes = await fetch(
+          `${getBase()}/behavior/event/homeworkSubmitCount?studentId=${resolvedStudentId.value}&courseId=${props.courseId}&homeworkId=${hw.id}`
+        );
+        const countJson = await countRes.json();
+        return [hw.id, Number(countJson?.data || 0)];
+      } catch {
+        return [hw.id, 0];
+      }
+    })
+  );
+
+  submitCountMap.value = Object.fromEntries(entries);
+}
+
 // 提交作业
 async function submitHomework(homeworkId) {
-  if (!studentId || !props.courseId) return;
+  if (!resolvedStudentId.value || !props.courseId) return;
+
+  submitLoadingMap.value = { ...submitLoadingMap.value, [homeworkId]: true };
+  message.value = "";
 
   try {
-    // 1) 先查已提交次数
-    const countRes = await fetch(
-        `${getBase()}/behavior/event/homeworkSubmitCount?studentId=${studentId}&courseId=${props.courseId}&homeworkId=${homeworkId}`
-    );
-    const countJson = await countRes.json();
-    const submittedCount = Number(countJson?.data || 0);
+    const submittedCount = Number(submitCountMap.value?.[homeworkId] || 0);
 
     // 2) 本次 attemptNo = 已提交次数 + 1
     const payload = {
-      studentId: studentId,
+      studentId: resolvedStudentId.value,
       courseId: props.courseId,
       homeworkId: homeworkId,
       score: null,
@@ -105,19 +135,27 @@ async function submitHomework(homeworkId) {
     const json = await res.json();
 
     if (json.code === "200") {
-      alert(`作业提交成功！本次为第 ${submittedCount + 1} 次提交`);
+      const nextCount = submittedCount + 1;
+      submitCountMap.value = { ...submitCountMap.value, [homeworkId]: nextCount };
+      message.value = `作业提交成功！作业 #${homeworkId} 已提交 ${nextCount} 次。`;
     } else {
       alert("提交失败：" + json.msg);
     }
   } catch (e) {
     console.error("提交作业失败", e);
     alert("提交失败，请查看控制台");
+  } finally {
+    submitLoadingMap.value = { ...submitLoadingMap.value, [homeworkId]: false };
   }
 }
 
 watch(() => props.courseId, () => {
   loadHomework();
 }, { immediate: true });
+
+watch(() => props.studentId, () => {
+  loadSubmitCounts();
+});
 </script>
 
 <style scoped>
@@ -162,6 +200,11 @@ watch(() => props.courseId, () => {
   margin-top: 10px;
   font-size: 13px;
   color: #555;
+}
+
+.tip.success {
+  color: #065f46;
+  font-weight: 600;
 }
 
 .homework {
