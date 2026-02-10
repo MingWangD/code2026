@@ -68,7 +68,15 @@ public class CourseController {
      * 查询所有课程
      */
     @GetMapping("/selectAll")
-    public Result selectAll(Course course) {
+    public Result selectAll(Course course,
+                            @RequestParam(required = false) String status) {
+        // Course 实体构造器里 status 可能有默认值（如“未开始”），
+        // 这里显式按请求参数覆盖，避免“无参查询”被默认状态误过滤。
+        if (status == null || status.isBlank()) {
+            course.setStatus(null);
+        } else {
+            course.setStatus(status);
+        }
         List<Course> list = courseService.selectAll(course);
         return Result.success(list);
     }
